@@ -1,0 +1,193 @@
+options {
+    STATIC = false;
+}
+
+PARSER_BEGIN(SpeedMarkerParser)
+package de.soapwars.speedmarker;
+
+public class SpeedMarkerParser {
+}
+
+PARSER_END(SpeedMarkerParser)
+
+TOKEN_MGR_DECLS : {
+int curlyDepth = 0 ;
+}
+
+<DEFAULT>
+SPECIAL_TOKEN:
+{
+    <NOPARSE_START: "<#noparse>">: NOPARSE
+}
+
+<DEFAULT>
+TOKEN:
+{
+    <DIRECTIVE_START: "<#" > : DIRECTIVE
+    |<DIRECTIVE_END: "</#" >
+    |<MACRO_START: "<@">
+    |<MACRO_END: "</@">
+    |<EXPRESSION_START: "${" > { curlyDepth++; } : EXPRESSION
+    |<CONTENT: (~["<","$"])+ | ~[]>
+}
+
+
+<NOPARSE>
+SPECIAL_TOKEN:
+{
+    <NOPARSE_END: "</#noparse>">:DEFAULT
+}
+
+<NOPARSE>
+TOKEN:
+{
+    <UNPARSED_CONTENT: (~["<"])+ | ~[]>
+}
+
+<DIRECTIVE>
+TOKEN: {
+     <ASSIGN: "assign">: EXPRESSION
+    |<ATTEMPT: "attempt">: EXPRESSION
+    |<BREAK: "break" >: EXPRESSION
+    |<CASE: "case">: EXPRESSION
+    |<COMPRESS: "compress">: EXPRESSION
+    |<DEFAULT_TAG: "default">: EXPRESSION
+    |<ELSE: "else">: EXPRESSION
+    |<ELSEIF: "elseif">: EXPRESSION
+    |<ESCAPE: "escape">: EXPRESSION
+    |<FALLBACK: "fallback">: EXPRESSION
+    |<FUNCTION: "function">: EXPRESSION
+    |<FLUSH: "flush">: EXPRESSION
+    |<FTL: "ftl">: EXPRESSION
+    |<GLOBAL: "global">: EXPRESSION
+    |<IF: "if">: EXPRESSION
+    |<IMPORT: "import">: EXPRESSION
+    |<INCLUDE: "include">: EXPRESSION
+    |<LIST: "list">: EXPRESSION
+    |<LOCAL: "local">: EXPRESSION
+    |<LT_TAG: "lt">: EXPRESSION
+    |<MACRO_TAG: "macro">: EXPRESSION
+    |<NESTED: "nested">: EXPRESSION
+    |<NOESCAPE: "noescape">: EXPRESSION
+    |<NT: "nt" >: EXPRESSION
+    |<RECOVER: "recover" >: EXPRESSION
+    |<RECURSE: "recurse" >: EXPRESSION
+    |<RETURN: "return" >: EXPRESSION
+    |<RT: "rt" >: EXPRESSION
+    |<SETTING: "setting" >: EXPRESSION
+    |<STOP: "stop" >: EXPRESSION
+    |<SWITCH: "switch" >: EXPRESSION
+    |<T_TAG: "t" >: EXPRESSION
+    |<VISIT: "visit" >: EXPRESSION
+}
+
+<EXPRESSION>
+TOKEN:
+{
+     <TAG_END: ">"> : DEFAULT
+    |<EMPTY_TAG: "/>"> : DEFAULT
+}
+<EXPRESSION>
+MORE:
+{
+     < "r\"" > : IN_RAW_STRING
+    |< "\"" > : IN_DUAL_STRING
+    |< "'" > : IN_SINGLE_STRING
+}
+
+<EXPRESSION>
+TOKEN:
+{
+     <NUMBERLITERAL: (["0"-"9"])+("."(["0"-"9"])+)? >
+    |<BOOLEANLITERAL: "true" | "false" >
+    |<DOUBLEQUEST: "??" >
+    |<EQUALS: "==" >
+    |<NOT_EQUALS: "!=" >
+    |<LTE: "lte" | "\\lte" | "<=" | "&lt;=" >
+    |<GTE: "gte" | "\\gte"  | "&gt;=" >
+    |<RANGEDOTS: ".." >
+    |<LOGIC_AND: "&&" >
+    |<LOGIC_OR: "||" >
+    |<SQUAREOPEN: "[" >
+    |<SQUARECLOSE: "]" >
+    |<COMMA: "," >
+    |<EXCLAMATION: "!" >
+    |<CURLYOPEN: "{" > { curlyDepth++; }
+    |<CURLYCLOSE: "}" > { SwitchTo( --curlyDepth == 0 ?  DEFAULT : EXPRESSION); }
+    |<PARENOPEN: "(" >
+    |<PARENCLOSE: ")" >
+    |<COLON: ":" >
+    |<LT: "<" | "lt" | "\\lt" | "&lt;" >
+    |<GT: "gt" | "\\gt" | "&gt;" >
+    |<ASTERISK: "*">
+    |<SLASH: "/" >
+    |<PLUS: "+">
+    |<MINUS: "-">
+    |<PERCENT: "%">
+    |<QUESTIONMARK: "?" >
+    |<IDENTIFIER: ["$","_","A"-"Z","a"-"z"](["$","_","A"-"Z","a"-"z","0"-"9"])* >
+}
+
+<EXPRESSION>
+SKIP: {
+      " " // <-- skipping spaces
+    | "\t"
+    | "\n"
+    | "\r"
+    | "\f"
+}
+
+<IN_RAW_STRING>
+MORE:
+{
+    < ~["\"" ] >
+}
+
+<IN_RAW_STRING>
+TOKEN:
+{
+    <RAWSTRING: "\"">: EXPRESSION
+}
+
+// TODO Expressions in String literals
+<IN_SINGLE_STRING,IN_DUAL_STRING>
+MORE:
+{
+     < "\\\"" >
+    |< "\\\'" >
+    |< "\\{" >
+    |< "\\\\" >
+    |< "\\n" >
+    |< "\\r" >
+    |< "\\t" >
+    |< "\\b" >
+    |< "\\f" >
+    |< "\\l" >
+    |< "\\g" >
+    |< "\\a" >
+    |< "\\x" (["A"-"Z","a"-"z","0"-"9"]){1,4} >
+}
+
+<IN_SINGLE_STRING>
+MORE:
+{
+     < ~["\\","\'"] >
+}
+<IN_SINGLE_STRING>
+
+TOKEN:
+{
+    < "'" > : EXPRESSION
+}
+
+
+<IN_DUAL_STRING>
+MORE:
+{
+     < ~["\\","\""] >
+}
+<IN_DUAL_STRING>
+TOKEN:
+{
+    < "\"" > : EXPRESSION
+}

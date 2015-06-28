@@ -1,0 +1,35 @@
+group 'de.soapwars.speedmarker'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "ca.coglinc:javacc-gradle-plugin:2.1.0"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: "ca.coglinc.javacc"
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+idea {
+    module {
+        sourceDirs += file('build/generated/javacc')
+    }
+}
