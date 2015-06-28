@@ -11,13 +11,28 @@ public class SpeedMarkerParser {
 PARSER_END(SpeedMarkerParser)
 
 TOKEN_MGR_DECLS : {
-int curlyDepth = 0 ;
+    int curlyDepth = 0 ;
+    java.util.List<StateBean> stateStack = new java.util.ArrayList<StateBean>();
+
+    protected void pushState(int state) {
+        stateStack.add(new StateBean(curLexState, curlyDepth));
+        SwitchTo(state);
+    }
+
+    protected void popState() {
+      SwitchTo(stateStack.remove(stateStack.size()-1).state);
+    }
+
+    protected void popIfCurly() {
+        StateBean top = stateStack.get(stateStack.size()-1);
+        if(curlyDepth == top.curly) popState();
+    }
 }
 
 <DEFAULT>
 SPECIAL_TOKEN:
 {
-    <NOPARSE_START: "<#noparse>">: NOPARSE
+    <NOPARSE_START: "<#noparse>"> { pushState(NOPARSE); }
 }
 
 <DEFAULT>
@@ -27,7 +42,7 @@ TOKEN:
     |<DIRECTIVE_END: "</#" >
     |<MACRO_START: "<@">
     |<MACRO_END: "</@">
-    |<EXPRESSION_START: "${" > { curlyDepth++; } : EXPRESSION
+    |<EXPRESSION_START: "${" >  { curlyDepth++; pushState(EXPRESSION); }
     |<CONTENT: (~["<","$"])+ | ~[]>
 }
 
@@ -35,7 +50,7 @@ TOKEN:
 <NOPARSE>
 SPECIAL_TOKEN:
 {
-    <NOPARSE_END: "</#noparse>">:DEFAULT
+    <NOPARSE_END: "</#noparse>"> { popState(); }
 }
 
 <NOPARSE>
@@ -46,46 +61,46 @@ TOKEN:
 
 <DIRECTIVE>
 TOKEN: {
-     <ASSIGN: "assign">: EXPRESSION
-    |<ATTEMPT: "attempt">: EXPRESSION
-    |<BREAK: "break" >: EXPRESSION
-    |<CASE: "case">: EXPRESSION
-    |<COMPRESS: "compress">: EXPRESSION
-    |<DEFAULT_TAG: "default">: EXPRESSION
-    |<ELSE: "else">: EXPRESSION
-    |<ELSEIF: "elseif">: EXPRESSION
-    |<ESCAPE: "escape">: EXPRESSION
-    |<FALLBACK: "fallback">: EXPRESSION
-    |<FUNCTION: "function">: EXPRESSION
-    |<FLUSH: "flush">: EXPRESSION
-    |<FTL: "ftl">: EXPRESSION
-    |<GLOBAL: "global">: EXPRESSION
-    |<IF: "if">: EXPRESSION
-    |<IMPORT: "import">: EXPRESSION
-    |<INCLUDE: "include">: EXPRESSION
-    |<LIST: "list">: EXPRESSION
-    |<LOCAL: "local">: EXPRESSION
-    |<LT_TAG: "lt">: EXPRESSION
-    |<MACRO_TAG: "macro">: EXPRESSION
-    |<NESTED: "nested">: EXPRESSION
-    |<NOESCAPE: "noescape">: EXPRESSION
-    |<NT: "nt" >: EXPRESSION
-    |<RECOVER: "recover" >: EXPRESSION
-    |<RECURSE: "recurse" >: EXPRESSION
-    |<RETURN: "return" >: EXPRESSION
-    |<RT: "rt" >: EXPRESSION
-    |<SETTING: "setting" >: EXPRESSION
-    |<STOP: "stop" >: EXPRESSION
-    |<SWITCH: "switch" >: EXPRESSION
-    |<T_TAG: "t" >: EXPRESSION
-    |<VISIT: "visit" >: EXPRESSION
+     <ASSIGN: "assign"> { pushState(EXPRESSION); }
+    |<ATTEMPT: "attempt"> { pushState(EXPRESSION); }
+    |<BREAK: "break" > { pushState(EXPRESSION); }
+    |<CASE: "case"> { pushState(EXPRESSION); }
+    |<COMPRESS: "compress"> { pushState(EXPRESSION); }
+    |<DEFAULT_TAG: "default"> { pushState(EXPRESSION); }
+    |<ELSE: "else"> { pushState(EXPRESSION); }
+    |<ELSEIF: "elseif"> { pushState(EXPRESSION); }
+    |<ESCAPE: "escape"> { pushState(EXPRESSION); }
+    |<FALLBACK: "fallback"> { pushState(EXPRESSION); }
+    |<FUNCTION: "function"> { pushState(EXPRESSION); }
+    |<FLUSH: "flush"> { pushState(EXPRESSION); }
+    |<FTL: "ftl"> { pushState(EXPRESSION); }
+    |<GLOBAL: "global"> { pushState(EXPRESSION); }
+    |<IF: "if"> { pushState(EXPRESSION); }
+    |<IMPORT: "import"> { pushState(EXPRESSION); }
+    |<INCLUDE: "include"> { pushState(EXPRESSION); }
+    |<LIST: "list"> { pushState(EXPRESSION); }
+    |<LOCAL: "local"> { pushState(EXPRESSION); }
+    |<LT_TAG: "lt"> { pushState(EXPRESSION); }
+    |<MACRO_TAG: "macro"> { pushState(EXPRESSION); }
+    |<NESTED: "nested"> { pushState(EXPRESSION); }
+    |<NOESCAPE: "noescape"> { pushState(EXPRESSION); }
+    |<NT: "nt" > { pushState(EXPRESSION); }
+    |<RECOVER: "recover" > { pushState(EXPRESSION); }
+    |<RECURSE: "recurse" > { pushState(EXPRESSION); }
+    |<RETURN: "return" > { pushState(EXPRESSION); }
+    |<RT: "rt" > { pushState(EXPRESSION); }
+    |<SETTING: "setting" > { pushState(EXPRESSION); }
+    |<STOP: "stop" > { pushState(EXPRESSION); }
+    |<SWITCH: "switch" > { pushState(EXPRESSION); }
+    |<T_TAG: "t" > { pushState(EXPRESSION); }
+    |<VISIT: "visit" > { pushState(EXPRESSION); }
 }
 
 <EXPRESSION>
 TOKEN:
 {
-     <TAG_END: ">"> : DEFAULT
-    |<EMPTY_TAG: "/>"> : DEFAULT
+     <TAG_END: ">"> { popState(); }
+    |<EMPTY_TAG: "/>"> { popState(); }
 }
 <EXPRESSION>
 MORE:
@@ -113,7 +128,7 @@ TOKEN:
     |<COMMA: "," >
     |<EXCLAMATION: "!" >
     |<CURLYOPEN: "{" > { curlyDepth++; }
-    |<CURLYCLOSE: "}" > { SwitchTo( --curlyDepth == 0 ?  DEFAULT : EXPRESSION); }
+    |<CURLYCLOSE: "}" > { popIfCurly(); }
     |<PARENOPEN: "(" >
     |<PARENCLOSE: ")" >
     |<COLON: ":" >
@@ -146,48 +161,42 @@ MORE:
 <IN_RAW_STRING>
 TOKEN:
 {
-    <RAWSTRING: "\"">: EXPRESSION
+    <RAWSTRING: "\""> { popState(); }
 }
 
 // TODO Expressions in String literals
 <IN_SINGLE_STRING,IN_DUAL_STRING>
-MORE:
-{
-     < "\\\"" >
-    |< "\\\'" >
-    |< "\\{" >
-    |< "\\\\" >
-    |< "\\n" >
-    |< "\\r" >
-    |< "\\t" >
-    |< "\\b" >
-    |< "\\f" >
-    |< "\\l" >
-    |< "\\g" >
-    |< "\\a" >
-    |< "\\x" (["A"-"Z","a"-"z","0"-"9"]){1,4} >
+TOKEN:
+{   <STRING_EXPRESSION_START: "${"> { pushState(EXPRESSION); }
+    |<ESC_DQUATOES: "\\\"" >
+    |<ESC_SQUATES: "\\\'" >
+    |<ESC_CURLOPEN: "\\{" >
+    |<ESC_BACKSLASH: "\\\\" >
+    |<ESC_NEWLINE: "\\n" >
+    |<ESC_CRET: "\\r" >
+    |<ESC_TAB: "\\t" >
+    |<ESC_BACKSPACE: "\\b" >
+    |<ESC_FORMFEED: "\\f" >
+    |<ESC_LT: "\\l" >
+    |<ESC_GT: "\\g" >
+    |<ESC_AMP: "\\a" >
+    |<ESC_UNICODE: "\\x" ["A"-"Z","a"-"z","0"-"9"]
+                         ["A"-"Z","a"-"z","0"-"9"]
+                        (["A"-"Z","a"-"z","0"-"9"]
+                        (["A"-"Z","a"-"z","0"-"9"])?)?
+     >
 }
 
 <IN_SINGLE_STRING>
-MORE:
-{
-     < ~["\\","\'"] >
-}
-<IN_SINGLE_STRING>
-
 TOKEN:
 {
-    < "'" > : EXPRESSION
+     <SINGLE_STRINGSEGMENT: ~["\\","\'"] >
+    |<END_SINGLE_STRING: "'" > { popState(); }
 }
 
-
-<IN_DUAL_STRING>
-MORE:
-{
-     < ~["\\","\""] >
-}
 <IN_DUAL_STRING>
 TOKEN:
 {
-    < "\"" > : EXPRESSION
+     <DOUBLE_STRINGSEGMENT: ~["\\","\""] >
+    |<END_DOUBLE_STRING: "\"" > { popState(); }
 }
