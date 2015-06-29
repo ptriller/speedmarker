@@ -5,7 +5,9 @@ options {
 PARSER_BEGIN(SpeedMarkerParser)
 package de.soapwars.speedmarker;
 
-public class SpeedMarkerParser {
+import de.soapwars.speedmarker.ast.*;
+
+public class SpeedMarkerParser extends SpeedMarkerParserBase {
 }
 
 PARSER_END(SpeedMarkerParser)
@@ -40,8 +42,8 @@ TOKEN:
 {
     <DIRECTIVE_START: "<#" > : DIRECTIVE
     |<DIRECTIVE_END: "</#" > : DIRECTIVE
-    |<MACRO_START: "<@">
-    |<MACRO_END: "</@">
+    |<MACRO_START: "<@">  { pushState(EXPRESSION); }
+    |<MACRO_END: "</@">  { pushState(EXPRESSION); }
     |<EXPRESSION_START: "${" >  { pushState(EXPRESSION); curlyDepth++; }
     |<CONTENT: (~["<","$"])+ | ~[]>
 }
@@ -199,4 +201,77 @@ TOKEN:
 {
      <DOUBLE_STRINGSEGMENT: (~["\\","\"", "$"])+ >
     |<END_DOUBLE_STRING: "\"" > { popState(); }
+}
+
+
+Node Start():
+{
+    Node n;
+}
+{
+        n = Sequence()
+        <EOF>
+        { return n; }
+
+}
+
+Node Sequence():
+{
+    SequenceNode n = new SequenceNode();
+}
+{
+      (Content(n)
+    | ContentExpression(n)
+    | Directive(n)
+    | Macro(n))
+    { return n; }
+}
+
+void Content(SequenceNode sn):
+{
+    Token t;
+    StringBuilder builder = new StringBuilder();
+}
+{
+    ( t = <CONTENT> { builder.append(t.image); })+
+      { sn.addNode(new ContentNode(builder.toString())); }
+    (  ContentExpression(sn)
+     | Directive(sn)
+     | Macro(sn)
+    )?
+}
+
+void ContentExpression(SequenceNode sn):
+{
+    Token t;
+}
+{
+    (<EXPRESSION_START> t = <IDENTIFIER> <CURLYCLOSE>
+        { sn.addNode(new IdentifierNode(t.image)); })+
+    (  Content(sn)
+     | Directive(sn)
+     | Macro(sn)
+    )?
+}
+
+void Directive(SequenceNode sn):
+{
+}
+{
+    (<MACRO_START>)+
+   (  Content(sn)
+    | ContentExpression(sn)
+    | Macro(sn)
+   )?
+}
+
+void Macro(SequenceNode sn):
+{
+}
+{
+    (<DIRECTIVE_START>)+
+   (  Content(sn)
+    | ContentExpression(sn)
+    | Directive(sn)
+   )?
 }
