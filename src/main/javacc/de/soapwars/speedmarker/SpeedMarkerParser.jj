@@ -39,10 +39,10 @@ SPECIAL_TOKEN:
 TOKEN:
 {
     <DIRECTIVE_START: "<#" > : DIRECTIVE
-    |<DIRECTIVE_END: "</#" >
+    |<DIRECTIVE_END: "</#" > : DIRECTIVE
     |<MACRO_START: "<@">
     |<MACRO_END: "</@">
-    |<EXPRESSION_START: "${" >  { curlyDepth++; pushState(EXPRESSION); }
+    |<EXPRESSION_START: "${" >  { pushState(EXPRESSION); curlyDepth++; }
     |<CONTENT: (~["<","$"])+ | ~[]>
 }
 
@@ -105,9 +105,9 @@ TOKEN:
 <EXPRESSION>
 MORE:
 {
-     < "r\"" > : IN_RAW_STRING
-    |< "\"" > : IN_DUAL_STRING
-    |< "'" > : IN_SINGLE_STRING
+     < "r\"" > { pushState(IN_RAW_STRING); }
+    |< "\"" > { pushState(IN_DUAL_STRING); }
+    |< "'" >  { pushState(IN_SINGLE_STRING); }
 }
 
 <EXPRESSION>
@@ -128,7 +128,7 @@ TOKEN:
     |<COMMA: "," >
     |<EXCLAMATION: "!" >
     |<CURLYOPEN: "{" > { curlyDepth++; }
-    |<CURLYCLOSE: "}" > { popIfCurly(); }
+    |<CURLYCLOSE: "}" > { curlyDepth--; popIfCurly(); }
     |<PARENOPEN: "(" >
     |<PARENCLOSE: ")" >
     |<COLON: ":" >
@@ -167,7 +167,7 @@ TOKEN:
 // TODO Expressions in String literals
 <IN_SINGLE_STRING,IN_DUAL_STRING>
 TOKEN:
-{   <STRING_EXPRESSION_START: "${"> { pushState(EXPRESSION); }
+{   <STRING_EXPRESSION_START: "${"> { pushState(EXPRESSION); curlyDepth++; }
     |<ESC_DQUATOES: "\\\"" >
     |<ESC_SQUATES: "\\\'" >
     |<ESC_CURLOPEN: "\\{" >
@@ -190,13 +190,13 @@ TOKEN:
 <IN_SINGLE_STRING>
 TOKEN:
 {
-     <SINGLE_STRINGSEGMENT: ~["\\","\'"] >
+     <SINGLE_STRINGSEGMENT: (~["\\","\'", "$"])+ >
     |<END_SINGLE_STRING: "'" > { popState(); }
 }
 
 <IN_DUAL_STRING>
 TOKEN:
 {
-     <DOUBLE_STRINGSEGMENT: ~["\\","\""] >
+     <DOUBLE_STRINGSEGMENT: (~["\\","\"", "$"])+ >
     |<END_DOUBLE_STRING: "\"" > { popState(); }
 }
