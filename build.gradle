@@ -26,6 +26,8 @@ targetCompatibility = 1.7
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'org.freemarker:freemarker:2.3.22'
+    testCompile 'com.google.guava:guava:18.0'
 }
 
 idea {

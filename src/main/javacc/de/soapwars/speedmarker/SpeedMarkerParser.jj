@@ -243,11 +243,11 @@ void Content(SequenceNode sn):
 
 void ContentExpression(SequenceNode sn):
 {
-    Token t;
+    Node n;
 }
 {
-    (<EXPRESSION_START> t = <IDENTIFIER> <CURLYCLOSE>
-        { sn.addNode(new IdentifierNode(t.image)); })+
+    (<EXPRESSION_START> n = Expression() <CURLYCLOSE>
+        { sn.addNode(n); })+
     (  Content(sn)
      | Directive(sn)
      | Macro(sn)
@@ -258,7 +258,11 @@ void Directive(SequenceNode sn):
 {
 }
 {
-    (<MACRO_START>)+
+    (<DIRECTIVE_START> (
+          IfBlock()
+        | AssignBlock()
+    )
+    )+
    (  Content(sn)
     | ContentExpression(sn)
     | Macro(sn)
@@ -269,9 +273,49 @@ void Macro(SequenceNode sn):
 {
 }
 {
-    (<DIRECTIVE_START>)+
+    (<MACRO_START>)+
    (  Content(sn)
     | ContentExpression(sn)
     | Directive(sn)
    )?
+}
+
+// DIRECTIVES
+
+Node IfBlock():
+{
+    Node condition;
+}
+{
+    <IF> condition = Expression() <CURLYCLOSE>
+    (
+        Sequence()
+        <ELSEIF> Expression() <CURLYCLOSE>
+    )*
+    (
+        <ELSE> <EMPTY_TAG>
+        Sequence()
+    )?
+    Sequence()
+    <DIRECTIVE_END> <IF> <CURLYCLOSE>
+    { return null; }
+}
+
+Node AssignBlock():
+{}
+{
+    <ASSIGN> <EMPTY_TAG>
+    { return null; }
+}
+
+
+
+// EXPRESSION
+
+Node Expression():
+{
+    Token t;
+}
+{
+    t = <IDENTIFIER> { return new IdentifierNode(t.image); }
 }
