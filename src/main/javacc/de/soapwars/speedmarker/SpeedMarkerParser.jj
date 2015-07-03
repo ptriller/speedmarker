@@ -1,5 +1,6 @@
 options {
     STATIC = false;
+	DEBUG_PARSER = true;
 }
 
 PARSER_BEGIN(SpeedMarkerParser)
@@ -16,13 +17,19 @@ TOKEN_MGR_DECLS : {
     int curlyDepth = 0 ;
     java.util.List<StateBean> stateStack = new java.util.ArrayList<StateBean>();
 
+	protected void swapState(int state) {
+		popState();
+		pushState(state);
+	}
+
     protected void pushState(int state) {
         stateStack.add(new StateBean(curLexState, curlyDepth));
         SwitchTo(state);
     }
 
     protected void popState() {
-      SwitchTo(stateStack.remove(stateStack.size()-1).state);
+      int state = stateStack.remove(stateStack.size()-1).state;
+      SwitchTo(state);
     }
 
     protected void popIfCurly() {
@@ -40,10 +47,10 @@ SPECIAL_TOKEN:
 <DEFAULT>
 TOKEN:
 {
-    <DIRECTIVE_START: "<#" > : DIRECTIVE
-    |<DIRECTIVE_END: "</#" > : DIRECTIVE
-    |<MACRO_START: "<@">  { pushState(EXPRESSION); }
-    |<MACRO_END: "</@">  { pushState(EXPRESSION); }
+	 <TAG_DIRECTIVE_START: "<#"> { pushState(DIRECTIVE); }
+	|<TAG_DIRECTIVE_END: "</#"> { pushState(DIRECTIVE); }
+    |<TAG_MACRO_START: "<@">  { pushState(EXPRESSION); }
+    |<TAG_MACRO_END: "</@">  { pushState(EXPRESSION); }
     |<EXPRESSION_START: "${" >  { pushState(EXPRESSION); curlyDepth++; }
     |<CONTENT: (~["<","$"])+ | ~[]>
 }
@@ -63,39 +70,39 @@ TOKEN:
 
 <DIRECTIVE>
 TOKEN: {
-     <ASSIGN: "assign"> { pushState(EXPRESSION); }
-    |<ATTEMPT: "attempt"> { pushState(EXPRESSION); }
-    |<BREAK: "break" > { pushState(EXPRESSION); }
-    |<CASE: "case"> { pushState(EXPRESSION); }
-    |<COMPRESS: "compress"> { pushState(EXPRESSION); }
-    |<DEFAULT_TAG: "default"> { pushState(EXPRESSION); }
-    |<ELSE: "else"> { pushState(EXPRESSION); }
-    |<ELSEIF: "elseif"> { pushState(EXPRESSION); }
-    |<ESCAPE: "escape"> { pushState(EXPRESSION); }
-    |<FALLBACK: "fallback"> { pushState(EXPRESSION); }
-    |<FUNCTION: "function"> { pushState(EXPRESSION); }
-    |<FLUSH: "flush"> { pushState(EXPRESSION); }
-    |<FTL: "ftl"> { pushState(EXPRESSION); }
-    |<GLOBAL: "global"> { pushState(EXPRESSION); }
-    |<IF: "if"> { pushState(EXPRESSION); }
-    |<IMPORT: "import"> { pushState(EXPRESSION); }
-    |<INCLUDE: "include"> { pushState(EXPRESSION); }
-    |<LIST: "list"> { pushState(EXPRESSION); }
-    |<LOCAL: "local"> { pushState(EXPRESSION); }
-    |<LT_TAG: "lt"> { pushState(EXPRESSION); }
-    |<MACRO_TAG: "macro"> { pushState(EXPRESSION); }
-    |<NESTED: "nested"> { pushState(EXPRESSION); }
-    |<NOESCAPE: "noescape"> { pushState(EXPRESSION); }
-    |<NT: "nt" > { pushState(EXPRESSION); }
-    |<RECOVER: "recover" > { pushState(EXPRESSION); }
-    |<RECURSE: "recurse" > { pushState(EXPRESSION); }
-    |<RETURN: "return" > { pushState(EXPRESSION); }
-    |<RT: "rt" > { pushState(EXPRESSION); }
-    |<SETTING: "setting" > { pushState(EXPRESSION); }
-    |<STOP: "stop" > { pushState(EXPRESSION); }
-    |<SWITCH: "switch" > { pushState(EXPRESSION); }
-    |<T_TAG: "t" > { pushState(EXPRESSION); }
-    |<VISIT: "visit" > { pushState(EXPRESSION); }
+    <TAG_ASSIGN: "assign"> { swapState(EXPRESSION); }
+    |<TAG_ATTEMPT: "attempt"> { swapState(EXPRESSION); }
+    |<TAG_BREAK: "break" > { swapState(EXPRESSION); }
+    |<TAG_CASE: "case"> { swapState(EXPRESSION); }
+    |<TAG_COMPRESS: "compress"> { swapState(EXPRESSION); }
+    |<TAG_DEFAULT: "default"> { swapState(EXPRESSION); }
+    |<TAG_ELSE: "else"> { swapState(EXPRESSION); }
+    |<TAG_ELSEIF: "elseif"> { swapState(EXPRESSION); }
+    |<TAG_ESCAPE: "escape"> { swapState(EXPRESSION); }
+    |<TAG_FALLBACK: "fallback"> { swapState(EXPRESSION); }
+    |<TAG_FUNCTION: "function"> { swapState(EXPRESSION); }
+    |<TAG_FLUSH: "flush"> { swapState(EXPRESSION); }
+    |<TAG_FTL: "ftl"> { swapState(EXPRESSION); }
+    |<TAG_GLOBAL: "global"> { swapState(EXPRESSION); }
+    |<TAG_IF: "if"> { swapState(EXPRESSION); }
+    |<TAG_IMPORT: "import"> { swapState(EXPRESSION); }
+    |<TAG_INCLUDE: "include"> { swapState(EXPRESSION); }
+    |<TAG_LIST: "list"> { swapState(EXPRESSION); }
+    |<TAG_LOCAL: "local"> { swapState(EXPRESSION); }
+    |<TAG_LT: "lt"> { swapState(EXPRESSION); }
+    |<TAG_MACRO: "macro"> { swapState(EXPRESSION); }
+    |<TAG_NESTED: "nested"> { swapState(EXPRESSION); }
+    |<TAG_NOESCAPE: "noescape"> { swapState(EXPRESSION); }
+    |<TAG_NT: "nt" > { swapState(EXPRESSION); }
+    |<TAG_RECOVER: "recover" > { swapState(EXPRESSION); }
+    |<TAG_RECURSE: "recurse" > { swapState(EXPRESSION); }
+    |<TAG_RETURN: "return" > { swapState(EXPRESSION); }
+    |<TAG_RT: "rt" > { swapState(EXPRESSION); }
+    |<TAG_SETTING: "setting" > { swapState(EXPRESSION); }
+    |<TAG_STOP: "stop" > { swapState(EXPRESSION); }
+    |<TAG_SWITCH: "switch" > { swapState(EXPRESSION); }
+    |<TAG_T: "t" > { swapState(EXPRESSION); }
+    |<TAG_VISIT: "visit" > { swapState(EXPRESSION); }
 }
 
 <EXPRESSION>
@@ -105,11 +112,11 @@ TOKEN:
     |<EMPTY_TAG: "/>"> { popState(); }
 }
 <EXPRESSION>
-MORE:
+TOKEN:
 {
-     < "r\"" > { pushState(IN_RAW_STRING); }
-    |< "\"" > { pushState(IN_DUAL_STRING); }
-    |< "'" >  { pushState(IN_SINGLE_STRING); }
+     <QUOTE_RAW:  "r\"" > { pushState(IN_RAW_STRING); }
+    |<QUOTE_DOUBLE: "\"" > { pushState(IN_DUAL_STRING); }
+    |<QUOTE_SINGLE: "'" >  { pushState(IN_SINGLE_STRING); }
 }
 
 <EXPRESSION>
@@ -118,7 +125,7 @@ TOKEN:
      <NUMBERLITERAL: (["0"-"9"])+("."(["0"-"9"])+)? >
     |<BOOLEANLITERAL: "true" | "false" >
     |<DOUBLEQUEST: "??" >
-    |<EQUALS: "==" >
+    |<COMPARE: "==" >
     |<NOT_EQUALS: "!=" >
     |<LTE: "lte" | "\\lte" | "<=" | "&lt;=" >
     |<GTE: "gte" | "\\gte"  | "&gt;=" >
@@ -141,7 +148,10 @@ TOKEN:
     |<PLUS: "+">
     |<MINUS: "-">
     |<PERCENT: "%">
+    |<EQUALS: "=">
     |<QUESTIONMARK: "?" >
+    |<AS: "as">
+    |<IN: "in">
     |<IDENTIFIER: ["$","_","A"-"Z","a"-"z"](["$","_","A"-"Z","a"-"z","0"-"9"])* >
 }
 
@@ -203,119 +213,189 @@ TOKEN:
     |<END_DOUBLE_STRING: "\"" > { popState(); }
 }
 
+// START
 
 Node Start():
 {
-    Node n;
+	Node node;
 }
 {
-        n = Sequence()
-        <EOF>
-        { return n; }
-
-}
-
-Node Sequence():
-{
-    SequenceNode n = new SequenceNode();
-}
-{
-      (Content(n)
-    | ContentExpression(n)
-    | Directive(n)
-    | Macro(n))
-    { return n; }
+	node = EmptySequence()
+	<EOF>
+	{ return node; }
 }
 
-void Content(SequenceNode sn):
+void EndEmpty():
+{}
 {
-    Token t;
-    StringBuilder builder = new StringBuilder();
-}
-{
-    ( t = <CONTENT> { builder.append(t.image); })+
-      { sn.addNode(new ContentNode(builder.toString())); }
-    (  ContentExpression(sn)
-     | Directive(sn)
-     | Macro(sn)
-    )?
+	<TAG_END> | <EMPTY_TAG>
 }
 
-void ContentExpression(SequenceNode sn):
+// TOP LEVEL PARSING
+
+
+Node EmptySequence():
 {
-    Node n;
+	Node node = EmptyNode.EMPTY_NODE;
 }
 {
-    (<EXPRESSION_START> n = Expression() <CURLYCLOSE>
-        { sn.addNode(n); })+
-    (  Content(sn)
-     | Directive(sn)
-     | Macro(sn)
-    )?
+	(  node = Content()
+	 | node = Directive()
+	 | node = Macro()
+	 | node = EmbeddedExpression()
+	 ) ?
+	 { return node; }
 }
 
-void Directive(SequenceNode sn):
+SequenceNode Content():
 {
+	Token t;
+	StringBuilder builder = new StringBuilder();
+	SequenceNode node = SequenceNode.EMPTY_SEQUENCE;
 }
 {
-    (<DIRECTIVE_START> (
-          IfBlock()
-        | AssignBlock()
-    )
-    )+
-   (  Content(sn)
-    | ContentExpression(sn)
-    | Macro(sn)
-   )?
+	( t = <CONTENT> { builder.append(t.image); } )+
+	( node = Directive()
+	| node = Macro()
+	| node = EmbeddedExpression()
+	)?
+	{ return new SequenceNode(node, new ContentNode(builder.toString())); }
 }
 
-void Macro(SequenceNode sn):
+
+SequenceNode Macro():
 {
+	SequenceNode node = SequenceNode.EMPTY_SEQUENCE;
 }
 {
-    (<MACRO_START>)+
-   (  Content(sn)
-    | ContentExpression(sn)
-    | Directive(sn)
-   )?
+	<TAG_MACRO_START> Identifier() <TAG_END><TAG_MACRO_END> Identifier() <TAG_END>
+	(
+	  node = Content()
+	| node = Directive()
+	| node = EmbeddedExpression()
+	)?
+	{ return new SequenceNode(node, EmptyNode.EMPTY_NODE); }
 }
+
+
+SequenceNode EmbeddedExpression():
+{
+	Node expression;
+	SequenceNode node = SequenceNode.EMPTY_SEQUENCE;
+}
+{
+	<EXPRESSION_START> expression = Expression() <CURLYCLOSE>
+	(
+	  node = Content()
+	| node = Directive()
+	| node = Macro()
+	)?
+	{ return new SequenceNode(node, expression); }
+}
+
+
+
+SequenceNode Directive():
+{
+	SequenceNode node = SequenceNode.EMPTY_SEQUENCE;
+}
+{
+	<TAG_DIRECTIVE_START> (
+		AssignDirective()
+	)
+	(
+	  node = Content()
+	| node = Macro()
+	| node = EmbeddedExpression()
+	)?
+	{ return new SequenceNode(node, EmptyNode.EMPTY_NODE); }
+}
+
 
 // DIRECTIVES
 
-Node IfBlock():
+Node AssignDirective():
 {
-    Node condition;
 }
 {
-    <IF> condition = Expression() <CURLYCLOSE>
-    (
-        Sequence()
-        <ELSEIF> Expression() <CURLYCLOSE>
+	<TAG_ASSIGN>
+	(
+		VariableName()
+		( <EQUALS> Expression() ( VariableName() <EQUALS> Expression() )*
+		  EndEmpty()
+		)
+	)
+	{ return EmptyNode.EMPTY_NODE; }
+}
+
+
+
+Node VariableName():
+{
+	Token t;
+	Node node;
+}
+{
+	t = <IDENTIFIER> { node = new StringNode(t.image); }
+	{ return node; }
+}
+
+
+Node String():
+{
+	Node node;
+}
+{
+	<QUOTE_DOUBLE> node = StringContent() <END_DOUBLE_STRING>
+	{ return node; }
+}
+
+
+Node StringContent():
+{
+	Token t;
+	StringBuilder builder = new StringBuilder();
+}
+{
+	( t = <DOUBLE_STRINGSEGMENT> { builder.append(t.image); }
+	| t = <SINGLE_STRINGSEGMENT> { builder.append(t.image); }
+    | <ESC_DQUATOES> { builder.append('"'); }
+    | <ESC_SQUATES> { builder.append('\''); }
+    | <ESC_CURLOPEN> { builder.append('{'); }
+    |<ESC_BACKSLASH> { builder.append('\\'); }
+    |<ESC_NEWLINE> { builder.append('\n'); }
+    |<ESC_CRET> { builder.append('\r'); }
+    |<ESC_TAB> { builder.append('\r'); }
+    |<ESC_BACKSPACE> { builder.append('\b'); }
+    |<ESC_FORMFEED> { builder.append('\f'); }
+    |<ESC_LT> { builder.append('<'); }
+    |<ESC_GT> { builder.append('>'); }
+    |<ESC_AMP> { builder.append('&'); }
+    |<ESC_UNICODE> { builder.append('?'); } // TODO
     )*
-    (
-        <ELSE> <EMPTY_TAG>
-        Sequence()
-    )?
-    Sequence()
-    <DIRECTIVE_END> <IF> <CURLYCLOSE>
-    { return null; }
+    { return new StringNode(builder.toString()); }
 }
 
-Node AssignBlock():
-{}
-{
-    <ASSIGN> <EMPTY_TAG>
-    { return null; }
-}
-
-
-
-// EXPRESSION
+// EXPRESSIONS
 
 Node Expression():
 {
-    Token t;
+	Node node;
 }
 {
-    t = <IDENTIFIER> { return new IdentifierNode(t.image); }
+	( node = Identifier()
+	| node = String()
+	)
+
+	{ return node; }
+}
+
+
+Node Identifier():
+{
+	Token t;
+}
+{
+	t = <IDENTIFIER>
+	{ return new IdentifierNode(t.image); }
 }

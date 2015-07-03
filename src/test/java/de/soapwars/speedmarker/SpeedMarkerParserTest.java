@@ -10,10 +10,18 @@ import java.io.StringReader;
  */
 public class SpeedMarkerParserTest {
 
-    @Test
-    public void testExpressionInContent() throws Exception {
-        SpeedMarkerParser parser = new SpeedMarkerParser(new StringReader("<hallo>${peter}</hallo>"));
-        Node node = parser.Start();
-        System.out.println(node);
-    }
+  @Test
+  public void testExpressionInContent() throws Exception {
+    SpeedMarkerParser parser = new SpeedMarkerParser(new StringReader("<hallo>${peter}</hallo>"));
+    Node node = parser.Start();
+    System.out.println(node);
+  }
+
+
+  @Test
+  public void testStringParsing() throws Exception {
+    SpeedMarkerParser parser = new SpeedMarkerParser(new StringReader("<#assign a=b><hallo>${\"Hallo\\nPeter\"}</hallo>"));
+    Node node = parser.Start();
+    node.print("");
+  }
 }

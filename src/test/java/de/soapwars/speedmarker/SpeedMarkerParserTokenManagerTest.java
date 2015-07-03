@@ -15,7 +15,7 @@ public class SpeedMarkerParserTokenManagerTest {
     @Test
     public void testTokenizer1() throws Exception {
         validateTokenStream("<#assign test />",
-                DIRECTIVE_START, ASSIGN, IDENTIFIER, EMPTY_TAG, EOF);
+                TAG_DIRECTIVE_START, TAG_ASSIGN, IDENTIFIER, EMPTY_TAG, EOF);
     }
 
     @Test
@@ -27,7 +27,7 @@ public class SpeedMarkerParserTokenManagerTest {
     @Test
     public void testTokenizer3() throws Exception {
         validateTokenStream("xxx${\"Hallo ${du} da\"}yyy",
-                CONTENT, EXPRESSION_START, DOUBLE_STRINGSEGMENT, STRING_EXPRESSION_START
+                CONTENT, EXPRESSION_START, QUOTE_DOUBLE, DOUBLE_STRINGSEGMENT, STRING_EXPRESSION_START
                 , IDENTIFIER, CURLYCLOSE, DOUBLE_STRINGSEGMENT, END_DOUBLE_STRING,
                 CURLYCLOSE, CONTENT, EOF);
     }
@@ -35,10 +35,20 @@ public class SpeedMarkerParserTokenManagerTest {
     @Test
     public void testTokenizer4() throws Exception {
         validateTokenStream("xxx${\'Hallo ${du} da\'}yyy",
-                CONTENT, EXPRESSION_START, SINGLE_STRINGSEGMENT, STRING_EXPRESSION_START
+                CONTENT, EXPRESSION_START, QUOTE_SINGLE, SINGLE_STRINGSEGMENT, STRING_EXPRESSION_START
                 , IDENTIFIER, CURLYCLOSE, SINGLE_STRINGSEGMENT, END_SINGLE_STRING,
                 CURLYCLOSE, CONTENT, EOF);
     }
+
+    @Test
+    public void testTokenizer5() throws Exception {
+      validateTokenStream("<#assign a=b><hallo>${\"Hallo\\nPeter\"}</hallo>",
+          TAG_DIRECTIVE_START, TAG_ASSIGN, IDENTIFIER, EQUALS , IDENTIFIER, TAG_END, CONTENT,
+          CONTENT, EXPRESSION_START, QUOTE_DOUBLE, DOUBLE_STRINGSEGMENT, ESC_NEWLINE,
+          DOUBLE_STRINGSEGMENT, END_DOUBLE_STRING, CURLYCLOSE, CONTENT, CONTENT, EOF);
+    }
+
+
     @Test
     public void testContentMerge() throws Exception {
         SimpleCharStream stream = new SimpleCharStream(new StringReader("test<me"));

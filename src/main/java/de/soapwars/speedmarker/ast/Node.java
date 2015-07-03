@@ -1,7 +1,11 @@
 package de.soapwars.speedmarker.ast;
 
 /**
- * Created by ptriller on 29.06.2015.
+ * @author Peter Triller
+ *         <p/>
+ *         Copyright (c) 2015 GMX GmbH, Muenchen. All rights reserved.
  */
 public interface Node {
+
+  void print(String depth);
 }

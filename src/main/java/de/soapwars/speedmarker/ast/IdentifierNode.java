@@ -1,13 +1,23 @@
 package de.soapwars.speedmarker.ast;
 
 /**
- * Created by ptriller on 30.06.2015.
+ * @author Peter Triller
+ *         <p/>
+ *         Copyright (c) 2015 GMX GmbH, Muenchen. All rights reserved.
  */
 public class IdentifierNode implements Node {
 
-    private String identifier;
+  private String identifier;
 
-    public IdentifierNode(String identifier) {
-        this.identifier = identifier;
-    }
+  public IdentifierNode(String identifier) {
+    this.identifier = identifier;
+  }
+
+  @Override
+  public void print(String depth) {
+    System.out.print(depth);
+    System.out.print("IDENT: \"");
+    System.out.print(identifier);
+    System.out.println('\"');
+  }
 }

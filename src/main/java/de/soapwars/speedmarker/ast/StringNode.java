@@ -5,20 +5,19 @@ package de.soapwars.speedmarker.ast;
  *         <p/>
  *         Copyright (c) 2015 GMX GmbH, Muenchen. All rights reserved.
  */
-public class ContentNode implements Node {
+public class StringNode implements Node {
 
-  private String content;
+  private String value;
 
-  public ContentNode(String content) {
-    this.content = content;
+  public StringNode(String value) {
+    this.value = value;
   }
 
   @Override
   public void print(String depth) {
     System.out.print(depth);
-    System.out.print("CONTENT: \"");
-    System.out.print(content);
-    System.out.println('\"');
+    System.out.print("STR: \"");
+    System.out.print(value);
+    System.out.println("\"");
   }
-
 }
