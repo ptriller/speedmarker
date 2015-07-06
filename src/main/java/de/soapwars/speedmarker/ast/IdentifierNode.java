@@ -32,7 +32,7 @@ public class IdentifierNode implements Node {
   @Override
   public void debug(Writer out, String indent) throws IOException {
     out.write(indent);
-    out.write("IDENt: \"");
+    out.write("IDENTIFIER: \"");
     out.write(identifier);
     out.write("\"\n");
   }

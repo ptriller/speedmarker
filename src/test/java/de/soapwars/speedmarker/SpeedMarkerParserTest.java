@@ -56,5 +56,40 @@ public class SpeedMarkerParserTest {
       pw.close();
    }
 
+   @Test
+   public void testStringInStringParsing() throws Exception {
+      Writer pw = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
+      SpeedMarkerParser parser = new SpeedMarkerParser(new StringReader("hoi${\"b${\\\"x}\\\"}}}}}}}c\"}d"));
+      Node node = parser.Start();
+      node.debug(pw, "");
+      Node simple = node.simplify();
+      simple.debug(pw, "");
+      pw.close();
+      assertEquals("hoibx}}}}}}}cd", simple.value(null));
+      assertEquals("hoibx}}}}}}}cd", node.value(null));
+   }
+
+   @Test
+   public void testSimpleIf() throws Exception {
+      Writer pw = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
+      SpeedMarkerParser parser = new SpeedMarkerParser(new StringReader("<#if a>hallo</#if>"));
+      Node node = parser.Start();
+      node.debug(pw, "");
+      Node simple = node.simplify();
+      simple.debug(pw, "");
+      pw.close();
+   }
+
+   @Test
+   public void testCompleteIf() throws Exception {
+      Writer pw = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
+      SpeedMarkerParser parser = new SpeedMarkerParser(new StringReader("<#if a>hallo<#elseif b>hallo2" +
+            "<#elseif c>q<#assign e=f>4<#else>ddddd</#if>"));
+      Node node = parser.Start();
+      node.debug(pw, "");
+      Node simple = node.simplify();
+      simple.debug(pw, "");
+      pw.close();
+   }
 
 }

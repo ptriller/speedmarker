@@ -16,9 +16,9 @@ public class ParsingStringNode implements Node {
    public ParsingStringNode(String expression, int beginLine, int beginColumn) throws ParseException {
       SpeedMarkerParserTokenManager manager = new SpeedMarkerParserTokenManager(
             new SimpleCharStream(new StringReader(expression), beginLine, beginColumn),
-            SpeedMarkerParserConstants.EXPRESSION);
+            SpeedMarkerParserConstants.STRING_PARSE);
       SpeedMarkerParser speedMarkerParser = new SpeedMarkerParser(manager);
-      node = speedMarkerParser.Expression();
+      node = speedMarkerParser.StringSequence();
    }
 
    @Override

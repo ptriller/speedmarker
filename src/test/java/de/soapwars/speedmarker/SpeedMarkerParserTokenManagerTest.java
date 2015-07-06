@@ -15,7 +15,7 @@ public class SpeedMarkerParserTokenManagerTest {
     @Test
     public void testTokenizer1() throws Exception {
         validateTokenStream("<#assign test />",
-                TAG_DIRECTIVE_START, TAG_ASSIGN, IDENTIFIER, EMPTY_TAG, EOF);
+                TAG_ASSIGN_START, IDENTIFIER, EMPTY_TAG, EOF);
     }
 
     @Test
@@ -28,7 +28,7 @@ public class SpeedMarkerParserTokenManagerTest {
     @Test
     public void testTokenizer5() throws Exception {
       validateTokenStream("<#assign a=b><hallo>${\"Hallo\\nPeter\"}</hallo>",
-          TAG_DIRECTIVE_START, TAG_ASSIGN, IDENTIFIER, EQUALS , IDENTIFIER, TAG_END, CONTENT,
+          TAG_ASSIGN_START, IDENTIFIER, EQUALS , IDENTIFIER, TAG_END, CONTENT,
           CONTENT, EXPRESSION_START, QUOTE_DOUBLE, DOUBLE_STRINGSEGMENT, ESC_NEWLINE,
           DOUBLE_STRINGSEGMENT, END_DOUBLE_STRING, CURLYCLOSE, CONTENT, CONTENT, EOF);
     }

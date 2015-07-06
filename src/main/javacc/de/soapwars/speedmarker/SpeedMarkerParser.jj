@@ -6,6 +6,8 @@ options {
 PARSER_BEGIN(SpeedMarkerParser)
 package de.soapwars.speedmarker;
 
+import java.util.List;
+import java.util.ArrayList;
 import de.soapwars.speedmarker.ast.*;
 
 public class SpeedMarkerParser extends SpeedMarkerParserBase {
@@ -47,14 +49,82 @@ SPECIAL_TOKEN:
 <DEFAULT>
 TOKEN:
 {
-	 <TAG_DIRECTIVE_START: "<#"> { pushState(DIRECTIVE); }
-	|<TAG_DIRECTIVE_END: "</#"> { pushState(DIRECTIVE); }
-    |<TAG_MACRO_START: "<@">  { pushState(EXPRESSION); }
-    |<TAG_MACRO_END: "</@">  { pushState(EXPRESSION); }
-    |<EXPRESSION_START: "${" >  { pushState(EXPRESSION); curlyDepth++; }
-    |<CONTENT: (~["<","$"])+ | ~[]>
+     <TAG_MACROCALL_START: "<@">  { pushState(EXPRESSION); }
+    |<TAG_MACROCALL_END: "</@">  { pushState(EXPRESSION); }
+    |<TAG_ASSIGN_START: "<#assign"> { pushState(EXPRESSION); }
+    |<TAG_ASSIGN_STOP: "</#assign"> { pushState(EXPRESSION); }
+    |<TAG_ATTEMPT_START: "<#attempt"> { pushState(EXPRESSION); }
+    |<TAG_ATTEMPT_STOP: "</#attempt"> { pushState(EXPRESSION); }
+    |<TAG_BREAK_START: "<#break" > { pushState(EXPRESSION); }
+    |<TAG_BREAK_STOP: "</#break" > { pushState(EXPRESSION); }
+    |<TAG_CASE_START: "<#case"> { pushState(EXPRESSION); }
+    |<TAG_CASE_STOP: "</#case"> { pushState(EXPRESSION); }
+    |<TAG_COMPRESS_START: "<#compress"> { pushState(EXPRESSION); }
+    |<TAG_COMPRESS_STOP: "</#compress"> { pushState(EXPRESSION); }
+    |<TAG_DEFAULT_START: "<#default"> { pushState(EXPRESSION); }
+    |<TAG_DEFAULT_STOP: "</#default"> { pushState(EXPRESSION); }
+    |<TAG_ELSE_START: "<#else"> { pushState(EXPRESSION); }
+    |<TAG_ELSE_STOP: "</#else"> { pushState(EXPRESSION); }
+    |<TAG_ELSEIF_START: "<#elseif"> { pushState(EXPRESSION); }
+    |<TAG_ELSEIF_STOP: "</#elseif"> { pushState(EXPRESSION); }
+    |<TAG_ESCAPE_START: "<#escape"> { pushState(EXPRESSION); }
+    |<TAG_ESCAPE_STOP: "</#escape"> { pushState(EXPRESSION); }
+    |<TAG_FALLBACK_START: "<#fallback"> { pushState(EXPRESSION); }
+    |<TAG_FALLBACK_STOP: "</#fallback"> { pushState(EXPRESSION); }
+    |<TAG_FUNCTION_START: "<#function"> { pushState(EXPRESSION); }
+    |<TAG_FUNCTION_STOP: "</#function"> { swapState(EXPRESSION); }
+    |<TAG_FLUSH_START: "<#flush"> { pushState(EXPRESSION); }
+    |<TAG_FLUSH_STOP: "</#flush"> { pushState(EXPRESSION); }
+    |<TAG_FTL_START: "<#ftl"> { pushState(EXPRESSION); }
+    |<TAG_FTL_STOP: "</#ftl"> { pushState(EXPRESSION); }
+    |<TAG_GLOBAL_START: "<#global"> { pushState(EXPRESSION); }
+    |<TAG_GLOBAL_STOP: "</#global"> { pushState(EXPRESSION); }
+    |<TAG_IF_START: "<#if"> { pushState(EXPRESSION); }
+    |<TAG_IF_STOP: "</#if"> { pushState(EXPRESSION); }
+    |<TAG_IMPORT_START: "<#import"> { pushState(EXPRESSION); }
+    |<TAG_IMPORT_STOP: "</#import"> { pushState(EXPRESSION); }
+    |<TAG_INCLUDE_START: "<#include"> { pushState(EXPRESSION); }
+    |<TAG_INCLUDE_STOP: "</#include"> { pushState(EXPRESSION); }
+    |<TAG_LIST_START: "<#list"> { pushState(EXPRESSION); }
+    |<TAG_LIST_STOP: "</#list"> { pushState(EXPRESSION); }
+    |<TAG_LOCAL_START: "<#local"> { pushState(EXPRESSION); }
+    |<TAG_LOCAL_STOP: "</#local"> { pushState(EXPRESSION); }
+    |<TAG_LT_START: "<#lt"> { pushState(EXPRESSION); }
+    |<TAG_LT_STOP: "</#lt"> { pushState(EXPRESSION); }
+    |<TAG_MACRO_START: "<#macro"> { pushState(EXPRESSION); }
+    |<TAG_MACRO_STOP: "</#macro"> { pushState(EXPRESSION); }
+    |<TAG_NESTED_START: "<#nested"> { pushState(EXPRESSION); }
+    |<TAG_NESTED_STOP: "</#nested"> { pushState(EXPRESSION); }
+    |<TAG_NOESCAPE_START: "<#noescape"> { pushState(EXPRESSION); }
+    |<TAG_NOESCAPE_STOP: "</#noescape"> { pushState(EXPRESSION); }
+    |<TAG_NT_START: "<#nt" > { pushState(EXPRESSION); }
+    |<TAG_NT_STOP: "</#nt" > { pushState(EXPRESSION); }
+    |<TAG_RECOVER_START: "<#recover" > { pushState(EXPRESSION); }
+    |<TAG_RECOVER_STOP: "</#recover" > { pushState(EXPRESSION); }
+    |<TAG_RECURSE_START: "<#recurse" > { pushState(EXPRESSION); }
+    |<TAG_RECURSE_STOP: "</#recurse" > { pushState(EXPRESSION); }
+    |<TAG_RETURN_START: "<#return" > { pushState(EXPRESSION); }
+    |<TAG_RETURN_STOP: "</#return" > { pushState(EXPRESSION); }
+    |<TAG_RT_START: "<#rt" > { pushState(EXPRESSION); }
+    |<TAG_RT_STOP: "</#rt" > { pushState(EXPRESSION); }
+    |<TAG_SETTING_START: "<#setting" > { pushState(EXPRESSION); }
+    |<TAG_SETTING_STOP: "</#setting" > { pushState(EXPRESSION); }
+    |<TAG_STOP_START: "<#stop" > { pushState(EXPRESSION); }
+    |<TAG_STOP_STOP: "</#stop" > { pushState(EXPRESSION); }
+    |<TAG_SWITCH_START: "<#switch" > { pushState(EXPRESSION); }
+    |<TAG_SWITCH_STOP: "</#switch" > { pushState(EXPRESSION); }
+    |<TAG_T_START: "<#t" > { pushState(EXPRESSION); }
+    |<TAG_T_STOP: "</#t" > { pushState(EXPRESSION); }
+    |<TAG_VISIT_START: "<#visit" > { pushState(EXPRESSION); }
+    |<TAG_VISIT_STOP: "</#visit" > { pushState(EXPRESSION); }
 }
 
+<DEFAULT,STRING_PARSE>
+TOKEN:
+{
+    <EXPRESSION_START: "${" >  { pushState(EXPRESSION); curlyDepth++; }
+    |<CONTENT: (~["<","$"])+ | ~[]>
+}
 
 <NOPARSE>
 SPECIAL_TOKEN:
@@ -66,43 +136,6 @@ SPECIAL_TOKEN:
 TOKEN:
 {
     <UNPARSED_CONTENT: (~["<"])+ | ~[]>
-}
-
-<DIRECTIVE>
-TOKEN: {
-    <TAG_ASSIGN: "assign"> { swapState(EXPRESSION); }
-    |<TAG_ATTEMPT: "attempt"> { swapState(EXPRESSION); }
-    |<TAG_BREAK: "break" > { swapState(EXPRESSION); }
-    |<TAG_CASE: "case"> { swapState(EXPRESSION); }
-    |<TAG_COMPRESS: "compress"> { swapState(EXPRESSION); }
-    |<TAG_DEFAULT: "default"> { swapState(EXPRESSION); }
-    |<TAG_ELSE: "else"> { swapState(EXPRESSION); }
-    |<TAG_ELSEIF: "elseif"> { swapState(EXPRESSION); }
-    |<TAG_ESCAPE: "escape"> { swapState(EXPRESSION); }
-    |<TAG_FALLBACK: "fallback"> { swapState(EXPRESSION); }
-    |<TAG_FUNCTION: "function"> { swapState(EXPRESSION); }
-    |<TAG_FLUSH: "flush"> { swapState(EXPRESSION); }
-    |<TAG_FTL: "ftl"> { swapState(EXPRESSION); }
-    |<TAG_GLOBAL: "global"> { swapState(EXPRESSION); }
-    |<TAG_IF: "if"> { swapState(EXPRESSION); }
-    |<TAG_IMPORT: "import"> { swapState(EXPRESSION); }
-    |<TAG_INCLUDE: "include"> { swapState(EXPRESSION); }
-    |<TAG_LIST: "list"> { swapState(EXPRESSION); }
-    |<TAG_LOCAL: "local"> { swapState(EXPRESSION); }
-    |<TAG_LT: "lt"> { swapState(EXPRESSION); }
-    |<TAG_MACRO: "macro"> { swapState(EXPRESSION); }
-    |<TAG_NESTED: "nested"> { swapState(EXPRESSION); }
-    |<TAG_NOESCAPE: "noescape"> { swapState(EXPRESSION); }
-    |<TAG_NT: "nt" > { swapState(EXPRESSION); }
-    |<TAG_RECOVER: "recover" > { swapState(EXPRESSION); }
-    |<TAG_RECURSE: "recurse" > { swapState(EXPRESSION); }
-    |<TAG_RETURN: "return" > { swapState(EXPRESSION); }
-    |<TAG_RT: "rt" > { swapState(EXPRESSION); }
-    |<TAG_SETTING: "setting" > { swapState(EXPRESSION); }
-    |<TAG_STOP: "stop" > { swapState(EXPRESSION); }
-    |<TAG_SWITCH: "switch" > { swapState(EXPRESSION); }
-    |<TAG_T: "t" > { swapState(EXPRESSION); }
-    |<TAG_VISIT: "visit" > { swapState(EXPRESSION); }
 }
 
 <EXPRESSION>
@@ -234,94 +267,77 @@ void EndEmpty():
 
 // TOP LEVEL PARSING
 
-
-ConcatinationNode EmptySequence():
+Node StringSequence():
 {
-	ConcatinationNode node = new ConcatinationNode();;
+	ConcatinationNode result = new ConcatinationNode();
+	Node element;
 }
 {
-	(  node = Content()
-	 | node = Directive()
-	 | node = Macro()
-	 | node = EmbeddedExpression()
-	 ) ?
-	 { return node; }
+	(  element = Content() { result.appendNode(element); }
+	 | element = EmbeddedExpression() { result.appendNode(element); }
+	 ) *
+	 { return result; }
 }
 
-ConcatinationNode Content():
+
+Node EmptySequence():
+{
+	ConcatinationNode result = new ConcatinationNode();
+	Node element;
+}
+{
+	(  element = Content() { result.appendNode(element); }
+	 | element = Directive() { result.appendNode(element); }
+	 | element = Macro() { result.appendNode(element); }
+	 | element = EmbeddedExpression() { result.appendNode(element); }
+	 ) *
+	 { return result; }
+}
+
+Node Content():
 {
 	Token t;
 	StringBuilder builder = new StringBuilder();
-	ConcatinationNode result = new ConcatinationNode();
-	ConcatinationNode node;
 }
 {
-	( t = <CONTENT> { builder.append(t.image); } )+
-	{ result.appendNode(new ValueNode(builder.toString())); }
-	( node = Directive() { result.appendAll(node); }
-	| node = Macro() { result.appendAll(node); }
-	| node = EmbeddedExpression() { result.appendAll(node); }
-	)?
-	{ return result; }
+	t = <CONTENT>
+	{ return new ValueNode(t.image); }
 }
 
 
-ConcatinationNode Macro():
+Node Macro():
 {
-	ConcatinationNode result = new ConcatinationNode();
-	ConcatinationNode node;
 }
 {
-	(<TAG_MACRO_START> Identifier() <TAG_END>
+	(<TAG_MACROCALL_START> Identifier() <TAG_END>
 	    EmptySequence()
-	<TAG_MACRO_END> Identifier() <TAG_END>
-	)+
-	(
-	  node = Content(){ result.appendAll(node); }
-	| node = Directive() { result.appendAll(node); }
-	| node = EmbeddedExpression() { result.appendAll(node); }
-	)?
-	{ return result; }
+	<TAG_MACROCALL_END> Identifier() <TAG_END>
+	)
+	{ return EmptyNode.EMPTY_NODE; }
 }
 
 
-ConcatinationNode EmbeddedExpression():
+Node EmbeddedExpression():
 {
 	Node expression;
-	ConcatinationNode result = new ConcatinationNode();
-	ConcatinationNode node;
 }
 {
-	(<EXPRESSION_START> expression = Expression() <CURLYCLOSE>
-	 { result.appendNode(expression); }
-	)+
-	(
-	  node = Content() { result.appendAll(node); }
-	| node = Directive() { result.appendAll(node); }
-	| node = Macro() { result.appendAll(node); }
-	)?
-	{ return result; }
+	<EXPRESSION_START> expression = Expression() <CURLYCLOSE>
+	{ return expression; }
 }
 
 
 
-ConcatinationNode Directive():
+Node Directive():
 {
-	ConcatinationNode result = new ConcatinationNode();
-	ConcatinationNode node;
 	Node directive;
 }
 {
-	(<TAG_DIRECTIVE_START> (
-		 directive = AssignDirective() { result.appendNode(directive); }
-		 |directive = IfDirective() { result.appendNode(directive); }
-	))+
-	(
-	  node = Content() { result.appendAll(node); }
-	| node = Macro() { result.appendAll(node); }
-	| node = EmbeddedExpression() { result.appendAll(node); }
-	)?
-	{ return result; }
+    (
+		 directive = AssignDirective()
+		 |directive = IfDirective()
+	)
+	{ return directive; }
 }
 
 
@@ -334,7 +350,7 @@ Node AssignDirective():
     Node value;
 }
 {
-	<TAG_ASSIGN>
+	<TAG_ASSIGN_START>
 	(
 		variable = VariableName()
 		(( <EQUALS> value = Expression() { result.appendNode(new AssignNode(variable, value)); }
@@ -344,7 +360,7 @@ Node AssignDirective():
 		)|(
 		    <TAG_END>
 		    value = EmptySequence() { result.appendNode(new AssignNode(variable, value)); }
-		    <TAG_DIRECTIVE_END> <TAG_ASSIGN> <TAG_END>
+		    <TAG_ASSIGN_STOP> <TAG_END>
 		))
 	)
 	{ return result; }
@@ -353,38 +369,20 @@ Node AssignDirective():
 
 Node IfDirective():
 {
+    List<ConditionalBlock> conditionals = new ArrayList<ConditionalBlock>();
+    Node expression;
+    Node block;
+    Node elseBlock = null;
 }
 {
-    <TAG_IF> Expression() <TAG_END>
-      EmptySequence()
-     (<TAG_DIRECTIVE_START>
-        ElseIfDirective()
-        |ElseDirective()
-     )
-    |(<TAG_DIRECTIVE_END> <TAG_IF> <TAG_END>)
-    { return EmptyNode.EMPTY_NODE; }
-}
-
-Node ElseIfDirective():
-{
-}
-{
-    <TAG_ELSEIF> Expression() <TAG_END>
-    EmptySequence()
-    (<TAG_DIRECTIVE_START>
-        ElseIfDirective()
-        |ElseDirective()
-    )?
-    { return EmptyNode.EMPTY_NODE; }
-}
-
-Node ElseDirective():
-{
-}
-{
-    <TAG_ELSE> <TAG_END>
-    EmptySequence()
-   { return EmptyNode.EMPTY_NODE; }
+    <TAG_IF_START> expression = Expression() <TAG_END>
+      block = EmptySequence() { conditionals.add(new ConditionalBlock(expression, block)); }
+      (<TAG_ELSEIF_START> expression = Expression() <TAG_END>
+           block = EmptySequence() { conditionals.add(new ConditionalBlock(expression, block)); })*
+      (<TAG_ELSE_START> <TAG_END>
+           elseBlock = EmptySequence())?
+    <TAG_IF_STOP> <TAG_END>
+    { return new ConditionalNode(conditionals, elseBlock); }
 }
 
 
@@ -407,8 +405,8 @@ Node String():
 	Token t;
 }
 {
-	(( t = <QUOTE_DOUBLE> content = SimpleString() <END_DOUBLE_STRING> {node = new ValueNode(content); })
-	|( t = <QUOTE_SINGLE> content = SimpleString() <END_SINGLE_STRING> {node = new ValueNode(content); })
+	(( t = <QUOTE_DOUBLE> content = SimpleString() <END_DOUBLE_STRING> {node = new ParsingStringNode(content, t.beginLine, t.beginColumn); })
+	|( t = <QUOTE_SINGLE> content = SimpleString() <END_SINGLE_STRING> {node = new ParsingStringNode(content, t.beginLine, t.beginColumn); })
 	|(<QUOTE_RAW> t = <RAW_STRING> <END_RAW_STRING> {node = new ValueNode(t.image); }))
 	{ return node; }
 }
