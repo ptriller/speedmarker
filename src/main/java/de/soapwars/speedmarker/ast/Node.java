@@ -1,5 +1,10 @@
 package de.soapwars.speedmarker.ast;
 
+import de.soapwars.speedmarker.Environment;
+
+import java.io.IOException;
+import java.io.Writer;
+
 /**
  * @author Peter Triller
  *         <p/>
@@ -7,5 +12,14 @@ package de.soapwars.speedmarker.ast;
  */
 public interface Node {
 
-  void print(String depth);
+
+   Object value(Environment env);
+
+   void output(Environment env, Writer out) throws IOException;
+
+   void debug(Writer out, String indent) throws IOException;
+
+   Node simplify();
+
+   boolean isConstant();
 }

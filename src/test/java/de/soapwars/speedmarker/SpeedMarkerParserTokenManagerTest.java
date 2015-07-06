@@ -24,21 +24,6 @@ public class SpeedMarkerParserTokenManagerTest {
                 CONTENT, EXPRESSION_START, CURLYOPEN, CURLYCLOSE, CURLYCLOSE, CONTENT, EOF);
     }
 
-    @Test
-    public void testTokenizer3() throws Exception {
-        validateTokenStream("xxx${\"Hallo ${du} da\"}yyy",
-                CONTENT, EXPRESSION_START, QUOTE_DOUBLE, DOUBLE_STRINGSEGMENT, STRING_EXPRESSION_START
-                , IDENTIFIER, CURLYCLOSE, DOUBLE_STRINGSEGMENT, END_DOUBLE_STRING,
-                CURLYCLOSE, CONTENT, EOF);
-    }
-
-    @Test
-    public void testTokenizer4() throws Exception {
-        validateTokenStream("xxx${\'Hallo ${du} da\'}yyy",
-                CONTENT, EXPRESSION_START, QUOTE_SINGLE, SINGLE_STRINGSEGMENT, STRING_EXPRESSION_START
-                , IDENTIFIER, CURLYCLOSE, SINGLE_STRINGSEGMENT, END_SINGLE_STRING,
-                CURLYCLOSE, CONTENT, EOF);
-    }
 
     @Test
     public void testTokenizer5() throws Exception {

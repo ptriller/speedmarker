@@ -165,22 +165,22 @@ SKIP: {
 }
 
 <IN_RAW_STRING>
-MORE:
+TOKEN:
 {
-    < ~["\"" ] >
+    <RAW_STRING:  (~["\"" ])+>
 }
 
 <IN_RAW_STRING>
 TOKEN:
 {
-    <RAWSTRING: "\""> { popState(); }
+    <END_RAW_STRING: "\""> { popState(); }
 }
 
 // TODO Expressions in String literals
 <IN_SINGLE_STRING,IN_DUAL_STRING>
 TOKEN:
-{   <STRING_EXPRESSION_START: "${"> { pushState(EXPRESSION); curlyDepth++; }
-    |<ESC_DQUATOES: "\\\"" >
+{
+     <ESC_DQUATOES: "\\\"" >
     |<ESC_SQUATES: "\\\'" >
     |<ESC_CURLOPEN: "\\{" >
     |<ESC_BACKSLASH: "\\\\" >
@@ -199,17 +199,18 @@ TOKEN:
      >
 }
 
+
 <IN_SINGLE_STRING>
 TOKEN:
 {
-     <SINGLE_STRINGSEGMENT: (~["\\","\'", "$"])+ >
+     <SINGLE_STRINGSEGMENT: (~["\\","\'" ])+ >
     |<END_SINGLE_STRING: "'" > { popState(); }
 }
 
 <IN_DUAL_STRING>
 TOKEN:
 {
-     <DOUBLE_STRINGSEGMENT: (~["\\","\"", "$"])+ >
+     <DOUBLE_STRINGSEGMENT: (~["\\","\"" ])+ >
     |<END_DOUBLE_STRING: "\"" > { popState(); }
 }
 
@@ -234,9 +235,9 @@ void EndEmpty():
 // TOP LEVEL PARSING
 
 
-Node EmptySequence():
+ConcatinationNode EmptySequence():
 {
-	Node node = EmptyNode.EMPTY_NODE;
+	ConcatinationNode node = new ConcatinationNode();;
 }
 {
 	(  node = Content()
@@ -247,68 +248,80 @@ Node EmptySequence():
 	 { return node; }
 }
 
-SequenceNode Content():
+ConcatinationNode Content():
 {
 	Token t;
 	StringBuilder builder = new StringBuilder();
-	SequenceNode node = SequenceNode.EMPTY_SEQUENCE;
+	ConcatinationNode result = new ConcatinationNode();
+	ConcatinationNode node;
 }
 {
 	( t = <CONTENT> { builder.append(t.image); } )+
-	( node = Directive()
-	| node = Macro()
-	| node = EmbeddedExpression()
+	{ result.appendNode(new ValueNode(builder.toString())); }
+	( node = Directive() { result.appendAll(node); }
+	| node = Macro() { result.appendAll(node); }
+	| node = EmbeddedExpression() { result.appendAll(node); }
 	)?
-	{ return new SequenceNode(node, new ContentNode(builder.toString())); }
+	{ return result; }
 }
 
 
-SequenceNode Macro():
+ConcatinationNode Macro():
 {
-	SequenceNode node = SequenceNode.EMPTY_SEQUENCE;
+	ConcatinationNode result = new ConcatinationNode();
+	ConcatinationNode node;
 }
 {
-	<TAG_MACRO_START> Identifier() <TAG_END><TAG_MACRO_END> Identifier() <TAG_END>
+	(<TAG_MACRO_START> Identifier() <TAG_END>
+	    EmptySequence()
+	<TAG_MACRO_END> Identifier() <TAG_END>
+	)+
 	(
-	  node = Content()
-	| node = Directive()
-	| node = EmbeddedExpression()
+	  node = Content(){ result.appendAll(node); }
+	| node = Directive() { result.appendAll(node); }
+	| node = EmbeddedExpression() { result.appendAll(node); }
 	)?
-	{ return new SequenceNode(node, EmptyNode.EMPTY_NODE); }
+	{ return result; }
 }
 
 
-SequenceNode EmbeddedExpression():
+ConcatinationNode EmbeddedExpression():
 {
 	Node expression;
-	SequenceNode node = SequenceNode.EMPTY_SEQUENCE;
+	ConcatinationNode result = new ConcatinationNode();
+	ConcatinationNode node;
 }
 {
-	<EXPRESSION_START> expression = Expression() <CURLYCLOSE>
+	(<EXPRESSION_START> expression = Expression() <CURLYCLOSE>
+	 { result.appendNode(expression); }
+	)+
 	(
-	  node = Content()
-	| node = Directive()
-	| node = Macro()
+	  node = Content() { result.appendAll(node); }
+	| node = Directive() { result.appendAll(node); }
+	| node = Macro() { result.appendAll(node); }
 	)?
-	{ return new SequenceNode(node, expression); }
+	{ return result; }
 }
 
 
 
-SequenceNode Directive():
+ConcatinationNode Directive():
 {
-	SequenceNode node = SequenceNode.EMPTY_SEQUENCE;
+	ConcatinationNode result = new ConcatinationNode();
+	ConcatinationNode node;
+	Node directive;
 }
 {
-	<TAG_DIRECTIVE_START> (
-		AssignDirective()
-	)
+	(<TAG_DIRECTIVE_START> (
+		 directive = AssignDirective() { result.appendNode(directive); }
+		 |directive = IfDirective() { result.appendNode(directive); }
+	))+
 	(
-	  node = Content()
-	| node = Macro()
-	| node = EmbeddedExpression()
+	  node = Content() { result.appendAll(node); }
+	| node = Macro() { result.appendAll(node); }
+	| node = EmbeddedExpression() { result.appendAll(node); }
 	)?
-	{ return new SequenceNode(node, EmptyNode.EMPTY_NODE); }
+	{ return result; }
 }
 
 
@@ -316,18 +329,63 @@ SequenceNode Directive():
 
 Node AssignDirective():
 {
+    ConcatinationNode result = new ConcatinationNode();
+    Node variable;
+    Node value;
 }
 {
 	<TAG_ASSIGN>
 	(
-		VariableName()
-		( <EQUALS> Expression() ( VariableName() <EQUALS> Expression() )*
+		variable = VariableName()
+		(( <EQUALS> value = Expression() { result.appendNode(new AssignNode(variable, value)); }
+		  ( variable = VariableName() <EQUALS>  value = Expression()
+		        { result.appendNode(new AssignNode(variable, value)); } )*
 		  EndEmpty()
-		)
+		)|(
+		    <TAG_END>
+		    value = EmptySequence() { result.appendNode(new AssignNode(variable, value)); }
+		    <TAG_DIRECTIVE_END> <TAG_ASSIGN> <TAG_END>
+		))
 	)
-	{ return EmptyNode.EMPTY_NODE; }
+	{ return result; }
 }
 
+
+Node IfDirective():
+{
+}
+{
+    <TAG_IF> Expression() <TAG_END>
+      EmptySequence()
+     (<TAG_DIRECTIVE_START>
+        ElseIfDirective()
+        |ElseDirective()
+     )
+    |(<TAG_DIRECTIVE_END> <TAG_IF> <TAG_END>)
+    { return EmptyNode.EMPTY_NODE; }
+}
+
+Node ElseIfDirective():
+{
+}
+{
+    <TAG_ELSEIF> Expression() <TAG_END>
+    EmptySequence()
+    (<TAG_DIRECTIVE_START>
+        ElseIfDirective()
+        |ElseDirective()
+    )?
+    { return EmptyNode.EMPTY_NODE; }
+}
+
+Node ElseDirective():
+{
+}
+{
+    <TAG_ELSE> <TAG_END>
+    EmptySequence()
+   { return EmptyNode.EMPTY_NODE; }
+}
 
 
 Node VariableName():
@@ -336,47 +394,64 @@ Node VariableName():
 	Node node;
 }
 {
-	t = <IDENTIFIER> { node = new StringNode(t.image); }
+	( t = <IDENTIFIER> { node = new ValueNode(t.image); }
+	| node = String() )
 	{ return node; }
 }
 
 
 Node String():
 {
-	Node node;
+	Node node = null;
+	String content;
+	Token t;
 }
 {
-	<QUOTE_DOUBLE> node = StringContent() <END_DOUBLE_STRING>
+	(( t = <QUOTE_DOUBLE> content = SimpleString() <END_DOUBLE_STRING> {node = new ValueNode(content); })
+	|( t = <QUOTE_SINGLE> content = SimpleString() <END_SINGLE_STRING> {node = new ValueNode(content); })
+	|(<QUOTE_RAW> t = <RAW_STRING> <END_RAW_STRING> {node = new ValueNode(t.image); }))
 	{ return node; }
 }
 
 
-Node StringContent():
+String SimpleString():
 {
-	Token t;
+    String segment;
 	StringBuilder builder = new StringBuilder();
 }
 {
-	( t = <DOUBLE_STRINGSEGMENT> { builder.append(t.image); }
-	| t = <SINGLE_STRINGSEGMENT> { builder.append(t.image); }
-    | <ESC_DQUATOES> { builder.append('"'); }
-    | <ESC_SQUATES> { builder.append('\''); }
-    | <ESC_CURLOPEN> { builder.append('{'); }
-    |<ESC_BACKSLASH> { builder.append('\\'); }
-    |<ESC_NEWLINE> { builder.append('\n'); }
-    |<ESC_CRET> { builder.append('\r'); }
-    |<ESC_TAB> { builder.append('\r'); }
-    |<ESC_BACKSPACE> { builder.append('\b'); }
-    |<ESC_FORMFEED> { builder.append('\f'); }
-    |<ESC_LT> { builder.append('<'); }
-    |<ESC_GT> { builder.append('>'); }
-    |<ESC_AMP> { builder.append('&'); }
-    |<ESC_UNICODE> { builder.append('?'); } // TODO
+    ( segment = simpleStringSegment() { builder.append(segment); }
     )*
-    { return new StringNode(builder.toString()); }
+    { return builder.toString(); }
+}
+
+String simpleStringSegment():
+{
+    Token t;
+    String segment;
+}
+{
+    ( t = <DOUBLE_STRINGSEGMENT> { segment = t.image; }
+	| t = <SINGLE_STRINGSEGMENT> { segment = t.image; }
+    | <ESC_DQUATOES> { segment = "\""; }
+    | <ESC_SQUATES> { segment = "\'"; }
+    | <ESC_CURLOPEN> { segment = "{"; }
+    | <ESC_BACKSLASH> { segment = "\\"; }
+    | <ESC_NEWLINE> { segment = "\n"; }
+    | <ESC_CRET> { segment = "\r"; }
+    | <ESC_TAB> { segment = "\r"; }
+    | <ESC_BACKSPACE> { segment = "\b"; }
+    | <ESC_FORMFEED> { segment = "\f"; }
+    | <ESC_LT> { segment = "<"; }
+    | <ESC_GT> { segment = ">"; }
+    | <ESC_AMP> { segment = "&"; }
+    | t = <ESC_UNICODE> { segment = parseEscape(t.image); }
+    )
+    { return segment; }
 }
 
 // EXPRESSIONS
+
 
 Node Expression():
 {
