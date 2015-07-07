@@ -1,6 +1,6 @@
 options {
     STATIC = false;
-	DEBUG_PARSER = true;
+	DEBUG_PARSER = false;
 }
 
 PARSER_BEGIN(SpeedMarkerParser)
@@ -9,6 +9,7 @@ package de.soapwars.speedmarker;
 import java.util.List;
 import java.util.ArrayList;
 import de.soapwars.speedmarker.ast.*;
+import de.soapwars.speedmarker.ast.conditional.ConditionalBlock;
 
 public class SpeedMarkerParser extends SpeedMarkerParserBase {
 }
@@ -51,22 +52,22 @@ TOKEN:
 {
      <TAG_MACROCALL_START: "<@">  { pushState(EXPRESSION); }
     |<TAG_MACROCALL_END: "</@">  { pushState(EXPRESSION); }
-    |<TAG_ASSIGN_START: "<#assign"> { pushState(EXPRESSION); }
-    |<TAG_ASSIGN_STOP: "</#assign"> { pushState(EXPRESSION); }
-    |<TAG_ATTEMPT_START: "<#attempt"> { pushState(EXPRESSION); }
-    |<TAG_ATTEMPT_STOP: "</#attempt"> { pushState(EXPRESSION); }
+    |<TAG_ASSIGN_START: "<#assign"> { pushState(EXPRESSION); } // DONE
+    |<TAG_ASSIGN_STOP: "</#assign"> { pushState(EXPRESSION); } // DONE
+    |<TAG_ATTEMPT_START: "<#attempt"> { pushState(EXPRESSION); } // DONE
+    |<TAG_ATTEMPT_STOP: "</#attempt"> { pushState(EXPRESSION); } // DONE
     |<TAG_BREAK_START: "<#break" > { pushState(EXPRESSION); }
     |<TAG_BREAK_STOP: "</#break" > { pushState(EXPRESSION); }
     |<TAG_CASE_START: "<#case"> { pushState(EXPRESSION); }
     |<TAG_CASE_STOP: "</#case"> { pushState(EXPRESSION); }
-    |<TAG_COMPRESS_START: "<#compress"> { pushState(EXPRESSION); }
-    |<TAG_COMPRESS_STOP: "</#compress"> { pushState(EXPRESSION); }
+    |<TAG_COMPRESS_START: "<#compress"> { pushState(EXPRESSION); } // DONE
+    |<TAG_COMPRESS_STOP: "</#compress"> { pushState(EXPRESSION); } // DONE
     |<TAG_DEFAULT_START: "<#default"> { pushState(EXPRESSION); }
     |<TAG_DEFAULT_STOP: "</#default"> { pushState(EXPRESSION); }
-    |<TAG_ELSE_START: "<#else"> { pushState(EXPRESSION); }
-    |<TAG_ELSE_STOP: "</#else"> { pushState(EXPRESSION); }
-    |<TAG_ELSEIF_START: "<#elseif"> { pushState(EXPRESSION); }
-    |<TAG_ELSEIF_STOP: "</#elseif"> { pushState(EXPRESSION); }
+    |<TAG_ELSE_START: "<#else"> { pushState(EXPRESSION); } // DONE
+    |<TAG_ELSE_STOP: "</#else"> { pushState(EXPRESSION); } // DONE
+    |<TAG_ELSEIF_START: "<#elseif"> { pushState(EXPRESSION); } // DONE
+    |<TAG_ELSEIF_STOP: "</#elseif"> { pushState(EXPRESSION); } // DONE
     |<TAG_ESCAPE_START: "<#escape"> { pushState(EXPRESSION); }
     |<TAG_ESCAPE_STOP: "</#escape"> { pushState(EXPRESSION); }
     |<TAG_FALLBACK_START: "<#fallback"> { pushState(EXPRESSION); }
@@ -79,8 +80,8 @@ TOKEN:
     |<TAG_FTL_STOP: "</#ftl"> { pushState(EXPRESSION); }
     |<TAG_GLOBAL_START: "<#global"> { pushState(EXPRESSION); }
     |<TAG_GLOBAL_STOP: "</#global"> { pushState(EXPRESSION); }
-    |<TAG_IF_START: "<#if"> { pushState(EXPRESSION); }
-    |<TAG_IF_STOP: "</#if"> { pushState(EXPRESSION); }
+    |<TAG_IF_START: "<#if"> { pushState(EXPRESSION); } // DONE
+    |<TAG_IF_STOP: "</#if"> { pushState(EXPRESSION); } // DONE
     |<TAG_IMPORT_START: "<#import"> { pushState(EXPRESSION); }
     |<TAG_IMPORT_STOP: "</#import"> { pushState(EXPRESSION); }
     |<TAG_INCLUDE_START: "<#include"> { pushState(EXPRESSION); }
@@ -99,8 +100,8 @@ TOKEN:
     |<TAG_NOESCAPE_STOP: "</#noescape"> { pushState(EXPRESSION); }
     |<TAG_NT_START: "<#nt" > { pushState(EXPRESSION); }
     |<TAG_NT_STOP: "</#nt" > { pushState(EXPRESSION); }
-    |<TAG_RECOVER_START: "<#recover" > { pushState(EXPRESSION); }
-    |<TAG_RECOVER_STOP: "</#recover" > { pushState(EXPRESSION); }
+    |<TAG_RECOVER_START: "<#recover" > { pushState(EXPRESSION); } // DONE
+    |<TAG_RECOVER_STOP: "</#recover" > { pushState(EXPRESSION); } // DONE
     |<TAG_RECURSE_START: "<#recurse" > { pushState(EXPRESSION); }
     |<TAG_RECURSE_STOP: "</#recurse" > { pushState(EXPRESSION); }
     |<TAG_RETURN_START: "<#return" > { pushState(EXPRESSION); }
@@ -385,6 +386,30 @@ Node IfDirective():
     { return new ConditionalNode(conditionals, elseBlock); }
 }
 
+Node AttemptDirective():
+{
+	Node attempt;
+	Node recover;
+}
+{
+	<TAG_ATTEMPT_START> <TAG_END>
+	attempt = EmptySequence()
+	<TAG_RECOVER_START> <TAG_END>
+	recover = EmptySequence()
+	(<TAG_RECOVER_STOP> | <TAG_ATTEMPT_STOP>) <TAG_END>
+	{ return new AttemptNode(attempt, recover); }
+}
+
+Node CompressDirective():
+{
+	Node node;
+}
+{
+	<TAG_COMPRESS_START> <TAG_END>
+	node = EmptySequence()
+	<TAG_COMPRESS_STOP> <TAG_END>
+	{ return new CompressNode(node); }
+}
 
 Node VariableName():
 {
