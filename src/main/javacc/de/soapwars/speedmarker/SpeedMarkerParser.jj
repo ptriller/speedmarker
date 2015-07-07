@@ -405,8 +405,8 @@ Node String():
 	Token t;
 }
 {
-	(( t = <QUOTE_DOUBLE> content = SimpleString() <END_DOUBLE_STRING> {node = new ParsingStringNode(content, t.beginLine, t.beginColumn); })
-	|( t = <QUOTE_SINGLE> content = SimpleString() <END_SINGLE_STRING> {node = new ParsingStringNode(content, t.beginLine, t.beginColumn); })
+	(( t = <QUOTE_DOUBLE> content = SimpleString() <END_DOUBLE_STRING> {node = new ValueNode(content); })
+	|( t = <QUOTE_SINGLE> content = SimpleString() <END_SINGLE_STRING> {node = new ValueNode(content); })
 	|(<QUOTE_RAW> t = <RAW_STRING> <END_RAW_STRING> {node = new ValueNode(t.image); }))
 	{ return node; }
 }

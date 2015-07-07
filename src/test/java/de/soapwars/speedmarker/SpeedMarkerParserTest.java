@@ -42,7 +42,7 @@ public class SpeedMarkerParserTest {
       node.debug(pw, "");
       Node simpleNode = node.simplify();
       simpleNode.debug(pw, "");
-      pw.close();
+      pw.flush();
    }
 
    @Test
@@ -53,7 +53,7 @@ public class SpeedMarkerParserTest {
       node.debug(pw, "");
       Node simpleNode = node.simplify();
       simpleNode.debug(pw, "");
-      pw.close();
+     pw.flush();
    }
 
    @Test
@@ -64,9 +64,9 @@ public class SpeedMarkerParserTest {
       node.debug(pw, "");
       Node simple = node.simplify();
       simple.debug(pw, "");
-      pw.close();
-      assertEquals("hoibx}}}}}}}cd", simple.value(null));
-      assertEquals("hoibx}}}}}}}cd", node.value(null));
+     pw.flush();
+      assertEquals("hoib${\"x}\"}}}}}}}cd", simple.value(null));
+      assertEquals("hoib${\"x}\"}}}}}}}cd", node.value(null));
    }
 
    @Test
@@ -77,7 +77,7 @@ public class SpeedMarkerParserTest {
       node.debug(pw, "");
       Node simple = node.simplify();
       simple.debug(pw, "");
-      pw.close();
+     pw.flush();
    }
 
    @Test
@@ -89,7 +89,7 @@ public class SpeedMarkerParserTest {
       node.debug(pw, "");
       Node simple = node.simplify();
       simple.debug(pw, "");
-      pw.close();
+      pw.flush();
    }
 
 }

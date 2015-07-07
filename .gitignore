@@ -3,6 +3,7 @@
 .idea
 build
 gradle
+target
 *.iws
 *.iml
 *.ipr
