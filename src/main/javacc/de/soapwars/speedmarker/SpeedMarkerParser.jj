@@ -337,6 +337,8 @@ Node Directive():
     (
 		 directive = AssignDirective()
 		 |directive = IfDirective()
+		 |directive = AttemptDirective()
+		 |directive = CompressDirective()
 	)
 	{ return directive; }
 }
