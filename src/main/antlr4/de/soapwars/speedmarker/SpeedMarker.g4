@@ -32,7 +32,10 @@ directive:
     | returnDirective
     | functionDirective
     | flushDirective
-    | ftlDirective;
+    | ftlDirective
+    | globalDirective
+    | importDirective
+    | includeDirective;
 
 
 assignDirective:
@@ -123,6 +126,9 @@ globalDirective:
 
 importDirective:
     DIRECTIVE_START TAG_IMPORT STRINGLITERAL KEY_AS variableName (TAG_END |  EMPTY_TAG_END);
+
+includeDirective:
+    DIRECTIVE_START TAG_INCLUDE STRINGLITERAL defaultParam* (TAG_END |  EMPTY_TAG_END);
 
 variableName:
     IDENTIFIER;

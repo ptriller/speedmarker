@@ -139,7 +139,7 @@ TAG_FTL: 'ftl' -> mode(EXPRESSION); // DONE
 TAG_GLOBAL: 'global' -> mode(EXPRESSION); //DONE
 TAG_IF: 'if' -> mode(EXPRESSION); //DONE
 TAG_IMPORT: 'import' -> mode(EXPRESSION); //DONE
-TAG_INCLUDE: 'include' -> mode(EXPRESSION);
+TAG_INCLUDE: 'include' -> mode(EXPRESSION); // DONE
 TAG_ITEMS: 'items' -> mode(EXPRESSION);
 TAG_LIST: 'list'-> mode(EXPRESSION);
 TAG_LOCAL: 'local' -> mode(EXPRESSION);
@@ -152,7 +152,7 @@ TAG_RECOVER: 'recover' -> mode(EXPRESSION); //DONE
 TAG_RECURSE: 'recurse' -> mode(EXPRESSION);
 TAG_RETURN: 'return' -> mode(EXPRESSION); //DONE
 TAG_SEP: 'sep' -> mode(EXPRESSION);
-TAG_SETTING: 'settimg' -> mode(EXPRESSION);
+TAG_SETTING: 'setting' -> mode(EXPRESSION);
 TAG_STOP: 'stop' -> mode(EXPRESSION);
 TAG_SWITCH: 'switch' -> mode(EXPRESSION); //DONE
 TAG_RT: 'rt' -> mode(EXPRESSION);
