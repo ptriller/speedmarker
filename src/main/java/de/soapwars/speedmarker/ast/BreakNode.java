@@ -7,18 +7,16 @@ import java.io.PrintWriter;
 /**
  * Created by ptriller on 21.07.2015.
  */
-public class CompressNode implements Node {
+public class BreakNode implements Node {
 
-   private Node child;
+   public static final BreakNode BREAK_NODE = new BreakNode();
 
-   public CompressNode(Node child) {
-      this.child = child;
+   private BreakNode() {
    }
 
    @Override
    public void debug(PrintWriter out, String indent) {
       out.print(indent);
-      out.println("COMPRESS");
-      child.debug(out, indent + "  ");
+      out.println("BREAK");
    }
 }

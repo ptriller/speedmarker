@@ -1,12 +1,12 @@
 package de.soapwars.speedmarker.ast;
 
-import de.soapwars.speedmarker.Environment;
+import de.soapwars.speedmarker.Node;
+import org.apache.commons.lang3.StringEscapeUtils;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.io.PrintWriter;
 
 /**
- * Created by ptriller on 04.07.2015.
+ * Created by ptriller on 21.07.2015.
  */
 public class ValueNode implements Node {
 
@@ -16,32 +16,17 @@ public class ValueNode implements Node {
       this.value = value;
    }
 
-
    @Override
-   public Object value(Environment env) {
-      return value;
-   }
-
-   @Override
-   public void output(Environment env, Writer out) throws IOException {
-      out.write(value.toString());
-   }
-
-   @Override
-   public void debug(Writer out, String indent) throws IOException {
-      out.write(indent);
-      out.append('\"');
-      out.write(value.toString());
-      out.write("\"\n");
-   }
-
-   @Override
-   public Node simplify() {
-      return this;
-   }
-
-   @Override
-   public boolean isConstant() {
-      return true;
+   public void debug(PrintWriter out, String indent) {
+      out.print(indent);
+      out.print("VALUE: ");
+      if(value instanceof String) {
+         out.print('\"');
+      }
+      out.print(StringEscapeUtils.escapeJava(value.toString()));
+      if(value instanceof String) {
+         out.print('\"');
+      }
+      out.println();
    }
 }

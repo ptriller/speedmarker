@@ -1,54 +1,40 @@
 package de.soapwars.speedmarker.ast;
 
-import de.soapwars.speedmarker.Environment;
+import de.soapwars.speedmarker.Node;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.io.PrintWriter;
 
 /**
- * Created by ptriller on 06.07.2015.
+ * Created by ptriller on 21.07.2015.
  */
 public class AssignNode implements Node {
 
-   private Node variable;
+   private String variableName;
 
    private Node value;
 
-   public AssignNode(Node variable, Node value) {
-      this.variable = variable;
+   public enum Scope {
+      DEFAULT,
+      GLOBAL
+   };
+
+   private Scope scope;
+
+   public AssignNode(String variableName, Node value, Scope scope) {
+      this.variableName = variableName;
       this.value = value;
+      this.scope = scope;
    }
 
    @Override
-   public Object value(Environment env) {
-      return null;
+   public void debug(PrintWriter out, String indent) {
+      out.print(indent);
+      out.println("ASSIGN");
+      out.print(indent);
+      out.print(" var=");
+      out.println(variableName);
+      out.print(indent);
+      out.println(" value:");
+      value.debug(out, indent + "  ");
    }
-
-   @Override
-   public void output(Environment env, Writer out) throws IOException {
-      // NIL
-   }
-
-
-   @Override
-   public Node simplify() {
-      variable = variable.simplify();
-      value = value.simplify();
-      return this;
-   }
-
-   @Override
-   public boolean isConstant() {
-      return false;
-   }
-
-
-   @Override
-   public void debug(Writer out, String indent) throws IOException {
-      out.append(indent);
-      out.append("ASSIGN:\n");
-      variable.debug(out, indent + ' ');
-      value.debug(out, indent + ' ');
-   }
-
 }
