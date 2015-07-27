@@ -31,4 +31,16 @@ public class SpeedMarkerTest {
    }
 
 
+  @Test
+  public void testTest() throws Exception {
+    TestGrammarLexer lexer = new TestGrammarLexer(new ANTLRInputStream("2+3*4+5"));
+    TestGrammarParser parser = new TestGrammarParser(new CommonTokenStream(lexer));
+    parser.setBuildParseTree(true);
+    parser.setErrorHandler(new BailErrorStrategy());
+    ParseTree tree = parser.start();
+    System.out.println(tree.toStringTree(parser));
+  }
+
+
+
 }

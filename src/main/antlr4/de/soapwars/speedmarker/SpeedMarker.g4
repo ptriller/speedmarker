@@ -35,7 +35,8 @@ directive:
     | ftlDirective
     | globalDirective
     | importDirective
-    | includeDirective;
+    | includeDirective
+    | listDirective;
 
 
 assignDirective:
@@ -117,10 +118,10 @@ ftlDirective:
 
 
 globalDirective:
-    (DIRECTIVE_START TAG_ASSIGN var=variableName TAG_END
+    (DIRECTIVE_START TAG_GLOBAL var=variableName TAG_END
              sequence
-             DIRECTIVE_END TAG_ASSIGN TAG_END) #complexGlobalDirective
-  | (DIRECTIVE_START TAG_ASSIGN
+             DIRECTIVE_END TAG_GLOBAL TAG_END) #complexGlobalDirective
+  | (DIRECTIVE_START TAG_GLOBAL
                  variableName EQUALS
                  expression (TAG_END | EMPTY_TAG_END)) #simpleGlobalDirective;
 
@@ -129,6 +130,31 @@ importDirective:
 
 includeDirective:
     DIRECTIVE_START TAG_INCLUDE STRINGLITERAL defaultParam* (TAG_END |  EMPTY_TAG_END);
+
+localDirective:
+    (DIRECTIVE_START TAG_LOCAL var=variableName TAG_END
+             sequence
+             DIRECTIVE_END TAG_LOCAL TAG_END) #complexLocalDirective
+  | (DIRECTIVE_START TAG_LOCAL
+                 variableName EQUALS
+                 expression (TAG_END | EMPTY_TAG_END)) #simpleLocalDirective;
+
+listDirective:
+	(DIRECTIVE_START TAG_LIST expression KEY_AS variableName TAG_END
+		sequence
+	(DIRECTIVE_START TAG_ELSE TAG_END
+		sequence)?
+	DIRECTIVE_END TAG_LIST TAG_END) #listSimpleDirective
+	| (DIRECTIVE_START TAG_LIST expression TAG_END
+	sequence
+	DIRECTIVE_START TAG_ITEMS KEY_AS variableName TAG_END
+	sequence
+	DIRECTIVE_END TAG_ITEMS TAG_END
+	sequence
+	(DIRECTIVE_START TAG_ELSE TAG_END
+		sequence)?
+	DIRECTIVE_END TAG_LIST TAG_END) #listComplexDirective;
+
 
 variableName:
     IDENTIFIER;
@@ -139,15 +165,18 @@ content:
 
 // EXPRESSION
 
+hashAccess:
+	( SQUARE_OPEN  ex2=expression  SQUARE_CLOSE);
+
 expression:
       string
-    | expression ( SQUARE_OPEN  expression  SQUARE_CLOSE)+
-    | expression ( DOT IDENTIFIER)+
-    | expression ( QUESTIONMARK IDENTIFIER)+
-    | expression ( BRACET_OPEN
-                  (expression (COMMA expression)* )? BRACET_CLOSE)+
-    | expression ( EXCLAMATION (expression)? )+
-    | expression DOUBLE_QUEST
+    | expression ( hashAccess
+                | ( DOT IDENTIFIER)
+                | (QUESTIONMARK IDENTIFIER)
+                | ( BRACET_OPEN
+                  (expression (COMMA expression)* )? BRACET_CLOSE)
+                | (expression ( EXCLAMATION (expression)? ))
+                | DOUBLE_QUEST )+
     | PLUS expression
     | MINUS expression
     | EXCLAMATION expression

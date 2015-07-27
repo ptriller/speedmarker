@@ -15,7 +15,8 @@ public class AssignNode implements Node {
 
    public enum Scope {
       DEFAULT,
-      GLOBAL
+      GLOBAL,
+      LOCAL
    };
 
    private Scope scope;

@@ -142,7 +142,7 @@ TAG_IMPORT: 'import' -> mode(EXPRESSION); //DONE
 TAG_INCLUDE: 'include' -> mode(EXPRESSION); // DONE
 TAG_ITEMS: 'items' -> mode(EXPRESSION);
 TAG_LIST: 'list'-> mode(EXPRESSION);
-TAG_LOCAL: 'local' -> mode(EXPRESSION);
+TAG_LOCAL: 'local' -> mode(EXPRESSION); //DONE
 TAG_LT: 'lt' -> mode(EXPRESSION);
 TAG_MACRO: 'macro' -> mode(EXPRESSION);
 TAG_NESTED: 'nested' -> mode(EXPRESSION);

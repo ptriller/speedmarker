@@ -191,7 +191,41 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
       return new ImportNode(unescape(ctx.STRINGLITERAL().getText()), ctx.variableName().getText());
    }
 
-   private String unescape(String value) {
+  @Override
+  public Node visitIncludeDirective(SpeedMarker.IncludeDirectiveContext ctx) {
+    List<ParameterNode> parameters = new ArrayList<>();
+    for (SpeedMarker.DefaultParamContext dCtx : ctx.defaultParam()) {
+      parameters.add(visitDefaultParam(dCtx));
+    }
+    return new IncludeNode(ctx.STRINGLITERAL().getText(), parameters);
+  }
+
+  @Override
+  public Node visitListSimpleDirective(SpeedMarker.ListSimpleDirectiveContext ctx) {
+    return super.visitListSimpleDirective(ctx);
+  }
+
+  @Override
+  public Node visitListComplexDirective(SpeedMarker.ListComplexDirectiveContext ctx) {
+    return super.visitListComplexDirective(ctx);
+  }
+
+  @Override
+  public AssignNode visitComplexLocalDirective(SpeedMarker.ComplexLocalDirectiveContext ctx) {
+    return new AssignNode(ctx.variableName().getText(), visitSequence(ctx.sequence()), AssignNode.Scope.LOCAL);
+  }
+
+  @Override
+  public AssignNode visitSimpleLocalDirective(SpeedMarker.SimpleLocalDirectiveContext ctx) {
+    return new AssignNode(ctx.variableName().getText(), visitExpression(ctx.expression()), AssignNode.Scope.LOCAL);
+  }
+
+  @Override
+  public Node visitHashAccess(SpeedMarker.HashAccessContext ctx) {
+    return super.visitHashAccess(ctx);
+  }
+
+  private String unescape(String value) {
       StringBuilder builder = new StringBuilder();
       StringLexer lexer = new StringLexer(new ANTLRInputStream(value));
       for (Token token = lexer.nextToken(); token.getType() != Token.EOF; token = lexer.nextToken()) {
