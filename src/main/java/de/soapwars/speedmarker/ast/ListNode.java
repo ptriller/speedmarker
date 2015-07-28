@@ -38,8 +38,25 @@ public class ListNode implements Node {
     out.print(indent);
     out.print("LIST");
     out.print(indent);
-    out.print(" sequence:");
+    out.println(" sequence:");
     sequence.debug(out, indent + "  ");
-
+    if(prefix != null) {
+      out.print(indent);
+      out.println(" prefix:");
+      prefix.debug(out, indent + "  ");
+    }
+    out.print(indent);
+    out.println(" body:");
+    body.debug(out, indent + "  ");
+    if(postfix != null) {
+      out.print(indent);
+      out.println(" postfix:");
+      postfix.debug(out, indent + "  ");
+    }
+    if(empty != null) {
+      out.print(indent);
+      out.println(" empty:");
+      empty.debug(out, indent + "  ");
+    }
   }
 }

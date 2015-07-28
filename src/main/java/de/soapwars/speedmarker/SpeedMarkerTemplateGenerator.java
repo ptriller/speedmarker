@@ -45,7 +45,7 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
 
    @Override
    public AssignNode visitSimpleAssignDirective(SpeedMarker.SimpleAssignDirectiveContext ctx) {
-      return new AssignNode(ctx.variableName().getText(), visitExpression(ctx.expression()), AssignNode.Scope.DEFAULT);
+      return new AssignNode(ctx.variableName().getText(), ctx.expression().accept(this), AssignNode.Scope.DEFAULT);
    }
 
    @Override
@@ -77,13 +77,13 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
 
    @Override
    public Node visitInlineexpression(SpeedMarker.InlineexpressionContext ctx) {
-      return visitExpression(ctx.expression());
+      return ctx.expression().accept(this);
    }
 
 
    @Override
    public ConditionalNode visitCaseDirective(SpeedMarker.CaseDirectiveContext ctx) {
-      return new ConditionalNode(visitExpression(ctx.expression()), visitSequence(ctx.sequence()));
+      return new ConditionalNode(ctx.expression().accept(this), visitSequence(ctx.sequence()));
    }
 
    @Override
@@ -95,7 +95,7 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
       if (ctx.sequence() != null) {
          cases.add(new ConditionalNode(new ValueNode(Boolean.TRUE), visitSequence(ctx.sequence())));
       }
-      return new SwitchNode(visitExpression(ctx.expression()), cases);
+      return new SwitchNode(ctx.expression().accept(this), cases);
    }
 
    @Override
@@ -106,9 +106,9 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
    @Override
    public IfNode visitIfDirective(SpeedMarker.IfDirectiveContext ctx) {
       List<ConditionalNode> nodes = new ArrayList<>();
-      nodes.add(new ConditionalNode(visitExpression(ctx.ifex), visitSequence(ctx.ifseq)));
+      nodes.add(new ConditionalNode(ctx.ifex.accept(this), visitSequence(ctx.ifseq)));
       for (SpeedMarker.ElseIfDirectiveContext elCtx : ctx.elseIfDirective()) {
-         nodes.add(new ConditionalNode(visitExpression(elCtx.expression()), visitSequence(elCtx.sequence())));
+         nodes.add(new ConditionalNode(elCtx.expression().accept(this), visitSequence(elCtx.sequence())));
       }
       if (ctx.elseseq != null) {
          nodes.add(new ConditionalNode(new ValueNode(Boolean.TRUE), visitSequence(ctx.elseseq)));
@@ -118,13 +118,13 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
 
    @Override
    public ConditionalNode visitElseIfDirective(SpeedMarker.ElseIfDirectiveContext ctx) {
-      return new ConditionalNode(visitExpression(ctx.expression()), visitSequence(ctx.sequence()));
+      return new ConditionalNode(ctx.expression().accept(this), visitSequence(ctx.sequence()));
    }
 
    @Override
    public EscapeNode visitEscapeDirective(SpeedMarker.EscapeDirectiveContext ctx) {
       return new EscapeNode(ctx.variableName().getText(),
-            visitExpression(ctx.expression()), visitSequence(ctx.sequence()));
+            ctx.expression().accept(this), visitSequence(ctx.sequence()));
    }
 
    @Override
@@ -135,7 +135,7 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
    @Override
    public ReturnNode visitReturnDirective(SpeedMarker.ReturnDirectiveContext ctx) {
       if (ctx.expression() != null) {
-         return new ReturnNode(visitExpression(ctx.expression()));
+         return new ReturnNode(ctx.expression().accept(this));
       } else {
          return new ReturnNode(null);
       }
@@ -163,7 +163,7 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
 
    @Override
    public ParameterNode visitDefaultParam(SpeedMarker.DefaultParamContext ctx) {
-      return new ParameterNode(ctx.variableName().getText(), visitExpression(ctx.expression()), false);
+      return new ParameterNode(ctx.variableName().getText(), ctx.expression().accept(this), false);
    }
 
    @Override
@@ -183,7 +183,7 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
 
    @Override
    public AssignNode visitSimpleGlobalDirective(SpeedMarker.SimpleGlobalDirectiveContext ctx) {
-      return new AssignNode(ctx.variableName().getText(), visitExpression(ctx.expression()), AssignNode.Scope.GLOBAL);
+      return new AssignNode(ctx.variableName().getText(), ctx.expression().accept(this), AssignNode.Scope.GLOBAL);
    }
 
    @Override
@@ -191,41 +191,86 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
       return new ImportNode(unescape(ctx.STRINGLITERAL().getText()), ctx.variableName().getText());
    }
 
-  @Override
-  public Node visitIncludeDirective(SpeedMarker.IncludeDirectiveContext ctx) {
-    List<ParameterNode> parameters = new ArrayList<>();
-    for (SpeedMarker.DefaultParamContext dCtx : ctx.defaultParam()) {
-      parameters.add(visitDefaultParam(dCtx));
-    }
-    return new IncludeNode(ctx.STRINGLITERAL().getText(), parameters);
-  }
+   @Override
+   public Node visitIncludeDirective(SpeedMarker.IncludeDirectiveContext ctx) {
+      List<ParameterNode> parameters = new ArrayList<>();
+      for (SpeedMarker.DefaultParamContext dCtx : ctx.defaultParam()) {
+         parameters.add(visitDefaultParam(dCtx));
+      }
+      return new IncludeNode(ctx.STRINGLITERAL().getText(), parameters);
+   }
 
-  @Override
-  public Node visitListSimpleDirective(SpeedMarker.ListSimpleDirectiveContext ctx) {
-    return super.visitListSimpleDirective(ctx);
-  }
+   @Override
+   public Node visitListSimpleDirective(SpeedMarker.ListSimpleDirectiveContext ctx) {
+      Node emptyNode = null;
+      if (ctx.empty != null) {
+         emptyNode = visitSequence(ctx.empty);
+      }
+      return new ListNode(
+            ctx.expression().accept(this),
+            ctx.variableName().getText(),
+            null,
+            visitSequence(ctx.body),
+            null,
+            emptyNode);
+   }
 
-  @Override
-  public Node visitListComplexDirective(SpeedMarker.ListComplexDirectiveContext ctx) {
-    return super.visitListComplexDirective(ctx);
-  }
+   @Override
+   public Node visitListComplexDirective(SpeedMarker.ListComplexDirectiveContext ctx) {
+      Node emptyNode = null;
+      if (ctx.empty != null) {
+         emptyNode = visitSequence(ctx.empty);
+      }
+      return new ListNode(
+            ctx.expression().accept(this),
+            ctx.variableName().getText(),
+            visitSequence(ctx.prefix),
+            visitSequence(ctx.body),
+            visitSequence(ctx.postfix),
+            emptyNode);
+   }
 
-  @Override
-  public AssignNode visitComplexLocalDirective(SpeedMarker.ComplexLocalDirectiveContext ctx) {
-    return new AssignNode(ctx.variableName().getText(), visitSequence(ctx.sequence()), AssignNode.Scope.LOCAL);
-  }
+   @Override
+   public AssignNode visitComplexLocalDirective(SpeedMarker.ComplexLocalDirectiveContext ctx) {
+      return new AssignNode(ctx.variableName().getText(), visitSequence(ctx.sequence()), AssignNode.Scope.LOCAL);
+   }
 
-  @Override
-  public AssignNode visitSimpleLocalDirective(SpeedMarker.SimpleLocalDirectiveContext ctx) {
-    return new AssignNode(ctx.variableName().getText(), visitExpression(ctx.expression()), AssignNode.Scope.LOCAL);
-  }
+   @Override
+   public AssignNode visitSimpleLocalDirective(SpeedMarker.SimpleLocalDirectiveContext ctx) {
+      return new AssignNode(ctx.variableName().getText(), ctx.expression().accept(this), AssignNode.Scope.LOCAL);
+   }
 
-  @Override
-  public Node visitHashAccess(SpeedMarker.HashAccessContext ctx) {
-    return super.visitHashAccess(ctx);
-  }
+   @Override
+   public Node visitLtDirective(SpeedMarker.LtDirectiveContext ctx) {
+      return TrimNode.TRIM_LEFT;
+   }
 
-  private String unescape(String value) {
+   @Override
+   public Node visitNtDirective(SpeedMarker.NtDirectiveContext ctx) {
+      return TrimNode.NO_TRIM;
+   }
+
+   @Override
+   public Node visitRtDirective(SpeedMarker.RtDirectiveContext ctx) {
+      return TrimNode.TRIM_RIGHT;
+   }
+
+   @Override
+   public Node visitStopDirective(SpeedMarker.StopDirectiveContext ctx) {
+      if (ctx.STRINGLITERAL() != null) {
+         return new StopNode(ctx.STRINGLITERAL().getText());
+      } else {
+         return new StopNode(null);
+      }
+   }
+
+   @Override
+   public Node visitTDirective(SpeedMarker.TDirectiveContext ctx) {
+      return TrimNode.TRIM_BOTH;
+   }
+
+
+   private String unescape(String value) {
       StringBuilder builder = new StringBuilder();
       StringLexer lexer = new StringLexer(new ANTLRInputStream(value));
       for (Token token = lexer.nextToken(); token.getType() != Token.EOF; token = lexer.nextToken()) {

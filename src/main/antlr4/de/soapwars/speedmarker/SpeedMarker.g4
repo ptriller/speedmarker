@@ -36,16 +36,21 @@ directive:
     | globalDirective
     | importDirective
     | includeDirective
-    | listDirective;
+    | listDirective
+    | ltDirective
+    | rtDirective
+    | ntDirective
+    | stopDirective
+    | tDirective;
 
 
 assignDirective:
-    (DIRECTIVE_START TAG_ASSIGN var=variableName TAG_END
+    DIRECTIVE_START TAG_ASSIGN var=variableName TAG_END
              sequence
-             DIRECTIVE_END TAG_ASSIGN TAG_END) #complexAssignDirective
-  | (DIRECTIVE_START TAG_ASSIGN
+             DIRECTIVE_END TAG_ASSIGN TAG_END #complexAssignDirective
+  | DIRECTIVE_START TAG_ASSIGN
                  variableName EQUALS
-                 expression (TAG_END | EMPTY_TAG_END)) #simpleAssignDirective;
+                 expression (TAG_END | EMPTY_TAG_END) #simpleAssignDirective;
 
 
 attemptDirective:
@@ -118,12 +123,12 @@ ftlDirective:
 
 
 globalDirective:
-    (DIRECTIVE_START TAG_GLOBAL var=variableName TAG_END
+    DIRECTIVE_START TAG_GLOBAL var=variableName TAG_END
              sequence
-             DIRECTIVE_END TAG_GLOBAL TAG_END) #complexGlobalDirective
-  | (DIRECTIVE_START TAG_GLOBAL
+             DIRECTIVE_END TAG_GLOBAL TAG_END #complexGlobalDirective
+  | DIRECTIVE_START TAG_GLOBAL
                  variableName EQUALS
-                 expression (TAG_END | EMPTY_TAG_END)) #simpleGlobalDirective;
+                 expression (TAG_END | EMPTY_TAG_END) #simpleGlobalDirective;
 
 importDirective:
     DIRECTIVE_START TAG_IMPORT STRINGLITERAL KEY_AS variableName (TAG_END |  EMPTY_TAG_END);
@@ -132,29 +137,49 @@ includeDirective:
     DIRECTIVE_START TAG_INCLUDE STRINGLITERAL defaultParam* (TAG_END |  EMPTY_TAG_END);
 
 localDirective:
-    (DIRECTIVE_START TAG_LOCAL var=variableName TAG_END
+    DIRECTIVE_START TAG_LOCAL var=variableName TAG_END
              sequence
-             DIRECTIVE_END TAG_LOCAL TAG_END) #complexLocalDirective
-  | (DIRECTIVE_START TAG_LOCAL
+             DIRECTIVE_END TAG_LOCAL TAG_END #complexLocalDirective
+  | DIRECTIVE_START TAG_LOCAL
                  variableName EQUALS
-                 expression (TAG_END | EMPTY_TAG_END)) #simpleLocalDirective;
+                 expression (TAG_END | EMPTY_TAG_END) #simpleLocalDirective;
 
 listDirective:
-	(DIRECTIVE_START TAG_LIST expression KEY_AS variableName TAG_END
-		sequence
+	DIRECTIVE_START TAG_LIST expression KEY_AS variableName TAG_END
+		body=sequence
 	(DIRECTIVE_START TAG_ELSE TAG_END
-		sequence)?
-	DIRECTIVE_END TAG_LIST TAG_END) #listSimpleDirective
-	| (DIRECTIVE_START TAG_LIST expression TAG_END
-	sequence
+		empty=sequence)?
+	DIRECTIVE_END TAG_LIST TAG_END #listSimpleDirective
+	| DIRECTIVE_START TAG_LIST expression TAG_END
+	prefix=sequence
 	DIRECTIVE_START TAG_ITEMS KEY_AS variableName TAG_END
-	sequence
+	body=sequence
 	DIRECTIVE_END TAG_ITEMS TAG_END
-	sequence
+	postfix=sequence
 	(DIRECTIVE_START TAG_ELSE TAG_END
-		sequence)?
-	DIRECTIVE_END TAG_LIST TAG_END) #listComplexDirective;
+		empty=sequence)?
+	DIRECTIVE_END TAG_LIST TAG_END #listComplexDirective;
 
+
+ltDirective:
+    DIRECTIVE_START TAG_LT (TAG_END | EMPTY_TAG_END);
+
+ntDirective:
+    DIRECTIVE_START TAG_NT (TAG_END | EMPTY_TAG_END);
+
+rtDirective:
+    DIRECTIVE_START TAG_RT (TAG_END | EMPTY_TAG_END);
+
+sepDirectove:
+    DIRECTIVE_START TAG_SEP TAG_END
+        sequence
+    DIRECTIVE_END TAG_SEP TAG_END
+
+stopDirective:
+    DIRECTIVE_START TAG_STOP STRINGLITERAL (TAG_END | EMPTY_TAG_END);
+
+tDirective:
+    DIRECTIVE_START TAG_T (TAG_END | EMPTY_TAG_END);
 
 variableName:
     IDENTIFIER;
@@ -166,37 +191,47 @@ content:
 // EXPRESSION
 
 hashAccess:
-	( SQUARE_OPEN  ex2=expression  SQUARE_CLOSE);
+	SQUARE_OPEN  expression  SQUARE_CLOSE;
+
+propertyAccess:
+    DOT variableName;
+
+builtinCall:
+    QUESTIONMARK IDENTIFIER;
+
+methodParameter:
+    BRACET_OPEN (expression (COMMA expression)* )? BRACET_CLOSE;
+
+defaultValue:
+    EXCLAMATION expression?;
+
+hasContent:
+    DOUBLE_QUEST;
 
 expression:
-      string
-    | expression ( hashAccess
-                | ( DOT IDENTIFIER)
-                | (QUESTIONMARK IDENTIFIER)
-                | ( BRACET_OPEN
-                  (expression (COMMA expression)* )? BRACET_CLOSE)
-                | (expression ( EXCLAMATION (expression)? ))
-                | DOUBLE_QUEST )+
-    | PLUS expression
-    | MINUS expression
-    | EXCLAMATION expression
-    | expression (ASTERISK expression)+
-    | expression (DIVIDE expression)+
-    | expression (MODULO expression)+
-    | expression (PLUS expression)+
-    | expression (MINUS expression)+
-    | expression RANGE_DOTS (WHITESPACE*(LT|EXCLAMATION|ASTERISK))? expression
-    | expression (LT expression)+
-    | expression (GT expression)+
-    | expression (LTE expression)+
-    | expression (GTE expression)+
-    | expression (CMP_EQUALS expression)+
-    | expression (EQUALS expression)+
-    | expression (CMP_NOTEQUALS expression)+
-    | expression (LOG_AND expression)+
-    | expression (LOG_OR expression)+
-    | BRACET_OPEN expression BRACET_CLOSE
+      literalExpression #literals
+    | expression (
+          hashAccess
+        | propertyAccess
+        | builtinCall
+        | methodParameter
+        | defaultValue
+        | hasContent
+        )+ #highestPrecedence
+    | (PLUS | MINUS | EXCLAMATION)+ expression #unaryOperators
+    | expression ((ASTERISK|DIVIDE|MODULO) expression)+ #multiplicativeOperators
+    | expression ((PLUS|MINUS) expression)+ #additiveOperators
+    | expression RANGE_DOTS (LT|EXCLAMATION|ASTERISK)? expression #rangeOperators
+    | expression ((LT|GT|LTE|GTE) expression)+ #comperativeOperators
+    | expression ((CMP_EQUALS|EQUALS|CMP_NOTEQUALS) expression)+ #equalOperators
+    | expression (LOG_AND expression)+ #logicalAnd
+    | expression (LOG_OR expression)+ #logicalOr
+    | BRACET_OPEN expression BRACET_CLOSE #bracetExpression
     ;
+
+literalExpression:
+      string;
+
 
 string:
       STRINGLITERAL #defaultstring
