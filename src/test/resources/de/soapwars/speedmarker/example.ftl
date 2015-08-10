@@ -1,5 +1,4 @@
 <#-- xxxx -->
-<#import "/spring.ftl" as spring />
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -20,9 +19,9 @@
     <script src="${url}" type="text/javascript"></script>
 <#assign url><@spring.url relativeUrl="${servletPath}/resources/js/jquery.validate-1.7.0.min.js"/></#assign>
     <script src="${url}" type="text/javascript"></script>
-    <#--
-    Some icons from Silk icon set 1.3 by Mark James, http://www.famfamfam.com/lab/icons/silk/
-     -->
+<#--
+Some icons from Silk icon set 1.3 by Mark James, http://www.famfamfam.com/lab/icons/silk/
+ -->
 </head>
 <body class="main">
 <div id="page"><#include "header.ftl"> <#include "navigation.ftl">

@@ -10,11 +10,11 @@ import java.util.List;
  */
 public class IncludeNode implements Node {
 
-   String included;
+   Node included;
 
    List<ParameterNode> parameters;
 
-   public IncludeNode(String included, List<ParameterNode> parameters) {
+   public IncludeNode(Node included, List<ParameterNode> parameters) {
       this.included = included;
       this.parameters = parameters;
    }

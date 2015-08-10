@@ -10,11 +10,11 @@ import java.io.PrintWriter;
  */
 public class ImportNode implements Node {
 
-   private String imported;
+   private Node imported;
 
    private String namespace;
 
-   public ImportNode(String imported, String namespace) {
+   public ImportNode(Node imported, String namespace) {
       this.imported = imported;
       this.namespace = namespace;
    }
@@ -25,7 +25,7 @@ public class ImportNode implements Node {
       out.println("IMPORT");
       out.print(indent);
       out.print(" imported: \"");
-      out.print(StringEscapeUtils.escapeJava(imported));
+      imported.debug(out, indent + "  ");
       out.println("\"");
       out.print(indent);
       out.print(" namespace: ");

@@ -17,9 +17,10 @@ public class SpeedMarkerTest {
    public void testMe() throws Exception {
       SpeedMarkerLexer lexer =
             new SpeedMarkerLexer(new ANTLRInputStream(SpeedMarkerTest.class.getResourceAsStream("test1.ftl")));
-      SpeedMarker marker = new SpeedMarker(new CommonTokenStream(lexer));
+      WhitespaceFIlteringTokenSource fitleredLexer = new WhitespaceFIlteringTokenSource(lexer);
+      SpeedMarker marker = new SpeedMarker(new CommonTokenStream(fitleredLexer));
       marker.setBuildParseTree(true);
-      marker.setErrorHandler(new BailErrorStrategy());
+//      marker.setErrorHandler(new BailErrorStrategy());
       ParseTree tree = marker.start();
       System.out.println(tree.toStringTree(marker));
       SpeedMarkerTemplateGenerator visitor = new SpeedMarkerTemplateGenerator();
@@ -34,7 +35,7 @@ public class SpeedMarkerTest {
   @Test
   public void testTest() throws Exception {
     TestGrammarLexer lexer = new TestGrammarLexer(new ANTLRInputStream("2+3*4+5"));
-    TestGrammarParser parser = new TestGrammarParser(new CommonTokenStream(lexer));
+     TestGrammarParser parser = new TestGrammarParser(new CommonTokenStream(lexer));
     parser.setBuildParseTree(true);
     parser.setErrorHandler(new BailErrorStrategy());
     ParseTree tree = parser.start();

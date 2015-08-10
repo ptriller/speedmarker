@@ -5,8 +5,17 @@ options {
 }
 
 start:
+    WHITESPACE*
+    ftlDirective?
     seq=sequence
     EOF;
+
+rootSequence:
+    ( comment
+    | inlineexpression
+    | rootDirective
+    | content)*;
+
 
 sequence:
     ( comment
@@ -21,6 +30,11 @@ comment:
 inlineexpression:
     EXPRESSION_START  expression CURLY_CLOSE;
 
+rootDirective:
+      directive
+    | functionDirective
+    | macroDirective;
+
 directive:
       assignDirective
     | attemptDirective
@@ -30,18 +44,13 @@ directive:
     | escapeDirective
     | noescapeDirective
     | returnDirective
-    | functionDirective
     | flushDirective
-    | ftlDirective
     | globalDirective
     | importDirective
     | includeDirective
     | listDirective
-    | ltDirective
-    | rtDirective
-    | ntDirective
     | stopDirective
-    | tDirective;
+    | macroCall;
 
 
 assignDirective:
@@ -109,6 +118,15 @@ functionDirective:
     sequence
     DIRECTIVE_END TAG_FUNCTION TAG_END;
 
+
+macroDirective:
+    DIRECTIVE_START TAG_MACRO macroName=variableName
+        simpleParam*
+        defaultParam*
+        (ellipse=variableName ELIPSE_DOTS)? TAG_END
+    sequence
+    DIRECTIVE_END TAG_MACRO TAG_END;
+
 simpleParam:
     variableName;
 
@@ -131,10 +149,10 @@ globalDirective:
                  expression (TAG_END | EMPTY_TAG_END) #simpleGlobalDirective;
 
 importDirective:
-    DIRECTIVE_START TAG_IMPORT STRINGLITERAL KEY_AS variableName (TAG_END |  EMPTY_TAG_END);
+    DIRECTIVE_START TAG_IMPORT expression KEY_AS variableName (TAG_END |  EMPTY_TAG_END);
 
 includeDirective:
-    DIRECTIVE_START TAG_INCLUDE STRINGLITERAL defaultParam* (TAG_END |  EMPTY_TAG_END);
+    DIRECTIVE_START TAG_INCLUDE expression defaultParam* (TAG_END |  EMPTY_TAG_END);
 
 localDirective:
     DIRECTIVE_START TAG_LOCAL var=variableName TAG_END
@@ -161,25 +179,27 @@ listDirective:
 	DIRECTIVE_END TAG_LIST TAG_END #listComplexDirective;
 
 
-ltDirective:
-    DIRECTIVE_START TAG_LT (TAG_END | EMPTY_TAG_END);
-
-ntDirective:
-    DIRECTIVE_START TAG_NT (TAG_END | EMPTY_TAG_END);
-
-rtDirective:
-    DIRECTIVE_START TAG_RT (TAG_END | EMPTY_TAG_END);
-
 sepDirectove:
     DIRECTIVE_START TAG_SEP TAG_END
         sequence
-    DIRECTIVE_END TAG_SEP TAG_END
+    DIRECTIVE_END TAG_SEP TAG_END;
 
 stopDirective:
     DIRECTIVE_START TAG_STOP STRINGLITERAL (TAG_END | EMPTY_TAG_END);
 
-tDirective:
-    DIRECTIVE_START TAG_T (TAG_END | EMPTY_TAG_END);
+
+macroCall:
+    MACROCALL_START variableName (DOT variableName)
+         paramValue* (SEMICOLON (expression (COMMA expression)*))? (
+         EMPTY_TAG_END | (
+           TAG_END
+           sequence
+           MACROCALL_END variableName (DOT variableName) TAG_END
+          ));
+
+paramValue:
+      variableName EQUALS expression
+    | variableName;
 
 variableName:
     IDENTIFIER;
@@ -230,7 +250,8 @@ expression:
     ;
 
 literalExpression:
-      string;
+      variableName
+    | string;
 
 
 string:

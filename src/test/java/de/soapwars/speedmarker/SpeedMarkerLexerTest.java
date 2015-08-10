@@ -1,15 +1,14 @@
 package de.soapwars.speedmarker;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.UnbufferedCharStream;
+import org.antlr.v4.runtime.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static de.soapwars.speedmarker.SpeedMarkerLexer.*;
 
@@ -80,6 +79,17 @@ public class SpeedMarkerLexerTest {
 
    }
 
+   @Test
+   public void textLexer() throws Exception {
+      ANTLRInputStream stream = new ANTLRInputStream(SpeedMarkerLexerTest.class.getResourceAsStream("test1.ftl"));
+      TokenSource testee = new SpeedMarkerLexer(stream);
+      testee = new WhitespaceFIlteringTokenSource(testee);
+      Token t = testee.nextToken();
+      while(t.getType() != Token.EOF) {
+         System.out.println(SpeedMarkerLexer.VOCABULARY.getSymbolicName(t.getType()));
+         t = testee.nextToken();
+      }
+   }
 
    @Test
    public void testFile() throws Exception {
@@ -110,4 +120,13 @@ public class SpeedMarkerLexerTest {
    }
 
 
+   @Test
+   public void regexTest() throws Exception {
+      Pattern pattern = Pattern.compile("([ \t\u000B\f]*\r?\n)?(.*)", Pattern.DOTALL);
+      Matcher matcher = pattern.matcher("\r\n\r\n\r\n   ");
+      System.err.println(matcher.matches());
+      System.err.println(matcher.group(1));
+      System.err.println(matcher.group(2));
+
+   }
 }

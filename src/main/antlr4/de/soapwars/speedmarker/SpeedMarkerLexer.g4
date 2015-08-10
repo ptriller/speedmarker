@@ -1,7 +1,7 @@
 lexer grammar SpeedMarkerLexer;
 
 // CONTENT LEVEL TOKENS
-fragment Whitespace: [ \t\r\n\u000C]+;
+fragment Whitespace: [ \t\r\n\u000C\u000B]+;
 
 fragment
 JavaLetter
@@ -33,6 +33,10 @@ DIRECTIVE_START: '<#' -> pushMode(DIRECTIVE);
 
 DIRECTIVE_END: '</#' -> pushMode(DIRECTIVE);
 
+MACROCALL_START: '<@' -> pushMode(EXPRESSION);
+
+MACROCALL_END: '</@' -> pushMode(EXPRESSION);
+
 CONTENT: ~('\u0020' | '\u00A0' | '\u1680' | '\u180E' | '\u2000' |
           '\u2001' | '\u2002' | '\u2003' | '\u2004' | '\u2005' |
           '\u2006' | '\u2007' | '\u2008' | '\u2009' | '\u200A' |
@@ -43,7 +47,7 @@ CONTENT: ~('\u0020' | '\u00A0' | '\u1680' | '\u180E' | '\u2000' |
 ILLEGAL_INPUT: .;
 
 mode EXPRESSION;
-EX_WHITESPACE: Whitespace+ -> type(WHITESPACE),skip;
+EX_WHITESPACE: Whitespace+;
 
 CURLY_CLOSE: '}' -> popMode;
 CURLY_OPEN: '{' -> pushMode(EXPRESSION);
@@ -88,7 +92,8 @@ COMMA: ',';
 LT: '<';
 LTE: '<=';
 EXCLAMATION: '!';
-SEMICOLON: ':';
+COLON: ':';
+SEMICOLON: ';';
 DOT: '.';
 ASTERISK: '*';
 PLUS: '+';

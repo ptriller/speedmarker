@@ -21,7 +21,12 @@ public class SequenceNode implements Node {
       out.print(indent);
       out.println("SEQUENCE");
       for (Node node : nodes) {
-         node.debug(out, indent + "  ");
+         if(node != null) {
+            node.debug(out, indent + "  ");
+         } else {
+            out.print(indent);
+            out.print("  <NULL>");
+         }
       }
    }
 }

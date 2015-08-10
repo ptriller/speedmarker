@@ -188,7 +188,7 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
 
    @Override
    public Node visitImportDirective(SpeedMarker.ImportDirectiveContext ctx) {
-      return new ImportNode(unescape(ctx.STRINGLITERAL().getText()), ctx.variableName().getText());
+      return new ImportNode(ctx.expression().accept(this), ctx.variableName().getText());
    }
 
    @Override
@@ -197,7 +197,7 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
       for (SpeedMarker.DefaultParamContext dCtx : ctx.defaultParam()) {
          parameters.add(visitDefaultParam(dCtx));
       }
-      return new IncludeNode(ctx.STRINGLITERAL().getText(), parameters);
+      return new IncludeNode(ctx.expression().accept(this), parameters);
    }
 
    @Override
@@ -241,21 +241,6 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
    }
 
    @Override
-   public Node visitLtDirective(SpeedMarker.LtDirectiveContext ctx) {
-      return TrimNode.TRIM_LEFT;
-   }
-
-   @Override
-   public Node visitNtDirective(SpeedMarker.NtDirectiveContext ctx) {
-      return TrimNode.NO_TRIM;
-   }
-
-   @Override
-   public Node visitRtDirective(SpeedMarker.RtDirectiveContext ctx) {
-      return TrimNode.TRIM_RIGHT;
-   }
-
-   @Override
    public Node visitStopDirective(SpeedMarker.StopDirectiveContext ctx) {
       if (ctx.STRINGLITERAL() != null) {
          return new StopNode(ctx.STRINGLITERAL().getText());
@@ -263,12 +248,6 @@ public class SpeedMarkerTemplateGenerator extends SpeedMarkerBaseVisitor<Node> {
          return new StopNode(null);
       }
    }
-
-   @Override
-   public Node visitTDirective(SpeedMarker.TDirectiveContext ctx) {
-      return TrimNode.TRIM_BOTH;
-   }
-
 
    private String unescape(String value) {
       StringBuilder builder = new StringBuilder();
