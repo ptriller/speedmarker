@@ -2,6 +2,7 @@ parser grammar SpeedMarker;
 
 options {
     tokenVocab = SpeedMarkerLexer;
+    contextSuperClass = de.soapwars.speedmarker.SpeedMarkerRuleContext;
 }
 
 start:
@@ -39,7 +40,7 @@ directive:
       assignDirective
     | attemptDirective
     | breakDirective
-    | switchDirective
+/*    | switchDirective
     | ifDirective
     | escapeDirective
     | noescapeDirective
@@ -50,27 +51,27 @@ directive:
     | includeDirective
     | listDirective
     | stopDirective
-    | macroCall;
+    | macroCall */;
 
 
 assignDirective:
-    DIRECTIVE_START TAG_ASSIGN var=variableName TAG_END
+    DIRECTIVE_START TAG_ASSIGN EX_WHITESPACE+ var=variableName EX_WHITESPACE* TAG_END
              sequence
-             DIRECTIVE_END TAG_ASSIGN TAG_END #complexAssignDirective
-  | DIRECTIVE_START TAG_ASSIGN
-                 variableName EQUALS
-                 expression (TAG_END | EMPTY_TAG_END) #simpleAssignDirective;
+             DIRECTIVE_END TAG_ASSIGN EX_WHITESPACE* TAG_END #complexAssignDirective
+  | DIRECTIVE_START TAG_ASSIGN EX_WHITESPACE+
+                 variableName  EX_WHITESPACE* EQUALS  EX_WHITESPACE*
+                 expression  EX_WHITESPACE*(TAG_END | EMPTY_TAG_END) #simpleAssignDirective;
 
 
 attemptDirective:
-    DIRECTIVE_START TAG_ATTEMPT TAG_END
+    DIRECTIVE_START TAG_ATTEMPT EX_WHITESPACE* TAG_END
     attemptBlock=sequence
-    DIRECTIVE_START TAG_RECOVER TAG_END
+    DIRECTIVE_START TAG_RECOVER EX_WHITESPACE* TAG_END
     recoverBlock=sequence
-    DIRECTIVE_END TAG_ATTEMPT TAG_END;
+    DIRECTIVE_END TAG_ATTEMPT EX_WHITESPACE* TAG_END;
 
 breakDirective:
-    DIRECTIVE_START TAG_BREAK (TAG_END | EMPTY_TAG_END);
+    DIRECTIVE_START TAG_BREAK EX_WHITESPACE* (TAG_END | EMPTY_TAG_END);
 
 switchDirective:
     DIRECTIVE_START TAG_SWITCH expression TAG_END

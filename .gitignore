@@ -1,11 +1,5 @@
-
 .gradle
 .idea
 build
-gradle
-target
-*.iws
 *.iml
 *.ipr
-gradlew.bat
-gradlew
