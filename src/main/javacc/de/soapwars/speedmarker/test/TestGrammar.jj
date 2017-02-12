@@ -1,0 +1,36 @@
+options {
+  UNICODE_INPUT=true;
+    ERROR_REPORTING = true;
+    STATIC = false;
+    DEBUG_PARSER = true;
+}
+
+PARSER_BEGIN(TestGrammarParser)
+package de.soapwars.speedmarker.test;
+
+/** Simple brace matcher. */
+public class TestGrammarParser {
+
+  /** Main entry point. */
+  public static void main(String args[]) throws ParseException {
+    TestGrammarParser parser = new TestGrammarParser(System.in);
+  }
+
+}
+
+PARSER_END(TestGrammarParser)
+
+
+
+
+SKIP :
+{
+ < [ " ", "\t", "\n", "\r" ] >
+}
+
+TOKEN :
+{
+  < TRUE: "true" >
+  | < FALSE: "false" >
+  | < IDENTIFIER: ([ "a"-"z", "A"-"Z" ])+ >
+}

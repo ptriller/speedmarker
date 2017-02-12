@@ -2,11 +2,15 @@ options {
   UNICODE_INPUT=true;
     ERROR_REPORTING = true;
     STATIC = false;
-    DEBUG_PARSER = true;
+//    DEBUG_PARSER = true;
+//    DEBUG_TOKEN_MANAGER = true;
 }
 
 PARSER_BEGIN(SpeedMarkerParser)
 package de.soapwars.speedmarker;
+
+import de.soapwars.speedmarker.ast.*;
+import de.soapwars.speedmarker.ast.builder.*;
 
 /** Simple brace matcher. */
 public class SpeedMarkerParser {
@@ -20,11 +24,137 @@ public class SpeedMarkerParser {
 
 PARSER_END(SpeedMarkerParser)
 
-TOKEN :
+TOKEN_MGR_DECLS : {
+
+  private StateStack stack = new StateStack();
+
+  private void pushState(int state) {
+    stack.push(curLexState);
+    SwitchTo(state);
+  }
+  private void popState() {
+    SwitchTo(stack.pop());
+  }
+
+  private void dupState() {
+    stack.push(curLexState);
+  }
+}
+
+
+/* WHITESPACE EXTRA ?
+"\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
+                                                    "\u2001", "\u2002", "\u2003", "\u2004", "\u2005",
+                                                    "\u2006", "\u2007", "\u2008", "\u2009", "\u200A",
+                                                    "\u200B", "\u202F", "\u205F", "\u3000", "\uFEFF",
+                                                    "\n", "\u000b", "\u000c", "\r", "\u0085",
+                                                    "\u2028", "\u2029", */
+
+
+<DEFAULT> TOKEN : {
+  < EXPRESSION_START: "${"> { pushState(CEXPRESSION); }
+| <DIRECTIVE_START: "<#" > : DIRECTIVE
+| <DIRECTIVE_END: "</#" > : DIRECTIVE
+| <MACROCALL_START: "<@" > { pushState(EXPRESSION); }
+| <MACROCALL_END: "</@" > { pushState(EXPRESSION); }
+| <CONTENT: (~[ "$", "<"])+ | ~[]>
+}
+
+<DIRECTIVE> TOKEN :
 {
-  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
-|
-  < #LETTER:
+  <TAG_NOPARSE: "noparse>"> : NOPARSE //DONE
+| <TAG_COMMENT: "--"> : COMMENT //DONE
+| <TAG_ASSIGN: "assign"> { pushState(EXPRESSION); }
+| <TAG_ATTEMPT: "attempt"> { pushState(EXPRESSION); }
+| <TAG_BREAK: "break"> { pushState(EXPRESSION); }
+| <TAG_CASE: "case"> { pushState(EXPRESSION); }
+| <TAG_COMPRESS: "compress"> { pushState(EXPRESSION); }
+| <TAG_DEFAULT: "default"> { pushState(EXPRESSION); }
+| <TAG_ELSE: "else"> { pushState(EXPRESSION); } 
+| <TAG_ELSEIF: "elseif"> { pushState(EXPRESSION); } 
+| <TAG_ESCAPE: "escape"> { pushState(EXPRESSION); } 
+| <TAG_FALLBACK: "fallback"> { pushState(EXPRESSION); } 
+| <TAG_FUNCTION: "function"> { pushState(EXPRESSION); } 
+| <TAG_FLUSH: "flush"> { pushState(EXPRESSION); } 
+| <TAG_FTL: "ftl"> { pushState(EXPRESSION); } 
+| <TAG_GLOBAL: "global"> { pushState(EXPRESSION); } 
+| <TAG_IF: "if"> { pushState(EXPRESSION); } 
+| <TAG_IMPORT: "import"> { pushState(EXPRESSION); } 
+| <TAG_INCLUDE: "include"> { pushState(EXPRESSION); } 
+| <TAG_ITEMS: "items"> { pushState(EXPRESSION); } 
+| <TAG_LIST: "list"> { pushState(EXPRESSION); }
+| <TAG_LOCAL: "local"> { pushState(EXPRESSION); } 
+| <TAG_LT: "lt"> { pushState(EXPRESSION); } 
+| <TAG_MACRO: "macro"> { pushState(EXPRESSION); } 
+| <TAG_NESTED: "nested"> { pushState(EXPRESSION); } 
+| <TAG_NOESCAPE: "noescape"> { pushState(EXPRESSION); } 
+| <TAG_NT: "nt"> { pushState(EXPRESSION); } 
+| <TAG_RECOVER: "recover"> { pushState(EXPRESSION); } 
+| <TAG_RECURSE: "recurse"> { pushState(EXPRESSION); } 
+| <TAG_RETURN: "return"> { pushState(EXPRESSION); } 
+| <TAG_SEP: "sep"> { pushState(EXPRESSION); } 
+| <TAG_SETTING: "setting"> { pushState(EXPRESSION); } 
+| <TAG_STOP: "stop"> { pushState(EXPRESSION); } 
+| <TAG_SWITCH: "switch"> { pushState(EXPRESSION); } 
+| <TAG_RT: "rt"> { pushState(EXPRESSION); } 
+| <TAG_T: "t"> { pushState(EXPRESSION); } 
+| <TAG_VISIT: "visit"> { pushState(EXPRESSION); }
+| <TAG_ILLEGAL: (~[ "\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
+                  "\u2001", "\u2002", "\u2003", "\u2004", "\u2005",
+                  "\u2006", "\u2007", "\u2008", "\u2009", "\u200A",
+                  "\u200B", "\u202F", "\u205F", "\u3000", "\uFEFF",
+                  "\n", "\u000b", "\u000c", "\r", "\u0085",
+                  "\u2028", "\u2029"])+>
+}
+
+<CEXPRESSION,EXPRESSION> SKIP : {
+  <([ "\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
+    "\u2001", "\u2002", "\u2003", "\u2004", "\u2005",
+    "\u2006", "\u2007", "\u2008", "\u2009", "\u200A",
+    "\u200B", "\u202F", "\u205F", "\u3000", "\uFEFF",
+    "\n", "\u000b", "\u000c", "\r", "\u0085",
+    "\u2028", "\u2029" ])+>
+}
+
+<CEXPRESSION,EXPRESSION> TOKEN :
+{
+  <CURLY_CLOSE: "}"> { popState(); }
+| <CURLY_OPEN: "{"> { dupState(); }
+| <EMPTY_TAG_END: "/>"> { popState(); }
+| <NUMBERLITERAL: (["0"-"9"])+("."(["0"-"9"])+)?>
+| <BOOLEAN_TRUE: "true">
+| <BOOLEAN_FALSE: "false">
+| <CMP_EQUALS: "==">
+| <CMP_NOTEQUALS: "!=">
+| <GTE: "gte"|"\\gte"|"&gt;=">
+| <LTE: "&lt;="|"\\lte "|"lte "|"<=">
+| <LT: "&lt;"|"\\lt"|"lt"|"<">
+| <GT: "gt"|"\\gt"|"&gt;">
+| <DOUBLE_QUEST: "??">
+| <LOG_AND: "&&">
+| <LOG_OR: "||">
+| <ELIPSE_DOTS: "...">
+| <RANGE_DOTS: "..">
+| <SQUARE_OPEN: "[">
+| <SQUARE_CLOSE: "]">
+| <COMMA: ",">
+| <EXCLAMATION: "!">
+| <COLON: ":">
+| <SEMICOLON: ";">
+| <DOT: ".">
+| <ASTERISK: "*">
+| <PLUS: "+">
+| <MINUS: "-">
+| <DIVIDE: "/">
+| <MODULO: "%">
+| <EQUALS: "=">
+| <BRACET_OPEN: "("> { pushState(CEXPRESSION); }
+| <BRACET_CLOSE: ")"> { popState(); }
+| <QUESTIONMARK: "?">
+| <KEY_TO: "to">
+| <KEY_AS: "as">
+|  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|  < #LETTER:
       [
        "\u0024",
        "\u0041"-"\u005a",
@@ -61,4 +191,157 @@ TOKEN :
        "\u1040"-"\u1049"
       ]
   >
+}
+
+<EXPRESSION,CEXPRESSION> SKIP: {
+  "r\"" { pushState(RAW_STRING); }
+| "\"" { pushState(DOUBLE_STRING); }
+| "'"  { pushState(SINGLE_STRING); }
+}
+
+<EXPRESSION> TOKEN : {
+  <TAG_END: ">"> { popState(); }
+}
+
+<CEXPRESSION> TOKEN : {
+  <CGT: ">"> { matchedToken.kind = GT; }
+}
+
+
+<NOPARSE> TOKEN : {
+  <NOPARSE_END: "</#noparse>" > : DEFAULT
+| <NOPARSE_CONTENT: (~[ "<" ])+ | ~[]>
+}
+
+<COMMENT> TOKEN : {
+  <COMMENT_END: "-->" > : DEFAULT
+| <COMMENT_CONTENT: (~["-"])+ | ~[]>
+}
+
+<RAW_STRING> TOKEN: {
+  <RAWSTRINGLITERAL: (~["\""])+>
+}
+
+<RAW_STRING> SKIP: {
+  "\"" { popState(); }
+}
+
+
+<DOUBLE_STRING> TOKEN: {
+  <STRINGLITERAL:    ("\\"~[] | ~["\""])+>
+}
+
+<DOUBLE_STRING> SKIP: {
+  "\"" { popState(); }
+}
+
+<SINGLE_STRING> TOKEN: {
+  <S_STR_CONTENT: ("\\"~[] | ~["'"])+> { matchedToken.kind = STRINGLITERAL; }
+}
+
+<SINGLE_STRING> SKIP: {
+  "'" { popState(); }
+}
+
+TOKEN: {
+  <ILLEGAL_IMPUT: ~[]>
+}
+
+
+Node start() :
+{ Node result; }
+{
+  result = sequence() <EOF> { return result; }
+}
+
+Node sequence() :
+{
+  SequenceNodeBuilder builder = new SequenceNodeBuilder();
+  Node node;
+  Token token;
+}
+{
+  (
+   ( node=directive()
+    |node=content()
+    |node=inlineexpression()
+   ) { builder.add(node); })*
+  { return builder.build(); }
+}
+
+Node directive() :
+{ Node result; }
+{ <DIRECTIVE_START>
+  (  (<TAG_NOPARSE> result=noparse())
+   | (<TAG_COMMENT> result=comment())
+   | (<TAG_ATTEMPT> result=attempt())
+  ){ return result; }
+}
+
+//////////////////////
+// DIRECTIVES       //
+//////////////////////
+
+Node comment() :
+{
+  CommentNodeBuilder builder = new CommentNodeBuilder();
+  Token token;
+}
+{
+  (token = <COMMENT_CONTENT> { builder.add(token.image); })+ <COMMENT_END>
+  { return builder.build(); }
+}
+
+Node content() :
+{
+  Token token;
+}
+{
+  token = <CONTENT> { return new ContentNode(token.image); }
+}
+
+
+Node noparse() :
+{
+  NoparseNodeBuilder builder = new NoparseNodeBuilder();
+  Token token;
+}
+{
+  (token = <NOPARSE_CONTENT> { builder.add(token.image); })* <NOPARSE_END>
+  { return builder.build(); }
+}
+
+Node attempt() :
+{
+  Node attempt;
+  Node recover;
+}
+{
+  <TAG_END>
+    attempt=sequence()
+  <DIRECTIVE_START>
+    recover=sequence() <DIRECTIVE_END> <TAG_ATTEMPT> <TAG_END>
+    { return new AttemptNode(attempt, recover); }
+}
+
+
+
+
+
+
+//////////////////////
+// EXPRESSIONS      //
+//////////////////////
+Node inlineexpression() :
+{
+}
+{
+  <EXPRESSION_START> expression() <CURLY_CLOSE>
+  { return new InlineExpressionNode(); }
+}
+
+Node expression() :
+{}
+{
+  <IDENTIFIER> { return null; }
 }
