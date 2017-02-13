@@ -6,6 +6,31 @@ options {
 //    DEBUG_TOKEN_MANAGER = true;
 }
 
+/*
+fragment
+JavaLetter
+	:	[a-zA-Z$_] // these are the "java letters" below 0xFF
+	|	// covers all characters above 0xFF which are not a surrogate
+		~[\u0000-\u00FF\uD800-\uDBFF]
+		{Character.isJavaIdentifierStart(_input.LA(-1))}?
+	|	// covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF
+		[\uD800-\uDBFF] [\uDC00-\uDFFF]
+		{Character.isJavaIdentifierStart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
+	;
+
+fragment
+JavaLetterOrDigit
+	:	[a-zA-Z0-9$_] // these are the "java letters or digits" below 0xFF
+	|	// covers all characters above 0xFF which are not a surrogate
+		~[\u0000-\u00FF\uD800-\uDBFF]
+		{Character.isJavaIdentifierPart(_input.LA(-1))}?
+	|	// covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF
+		[\uD800-\uDBFF] [\uDC00-\uDFFF]
+		{Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
+    ;
+
+*/
+
 PARSER_BEGIN(SpeedMarkerParser)
 package de.soapwars.speedmarker;
 
@@ -52,60 +77,89 @@ TOKEN_MGR_DECLS : {
 
 
 <DEFAULT> TOKEN : {
-  < EXPRESSION_START: "${"> { pushState(CEXPRESSION); }
-| <DIRECTIVE_START: "<#" > : DIRECTIVE
-| <DIRECTIVE_END: "</#" > : DIRECTIVE
-| <MACROCALL_START: "<@" > { pushState(EXPRESSION); }
-| <MACROCALL_END: "</@" > { pushState(EXPRESSION); }
-| <CONTENT: (~[ "$", "<"])+ | ~[]>
-}
-
-<DIRECTIVE> TOKEN :
-{
-  <TAG_NOPARSE: "noparse>"> : NOPARSE //DONE
-| <TAG_COMMENT: "--"> : COMMENT //DONE
-| <TAG_ASSIGN: "assign"> { pushState(EXPRESSION); }
-| <TAG_ATTEMPT: "attempt"> { pushState(EXPRESSION); }
-| <TAG_BREAK: "break"> { pushState(EXPRESSION); }
-| <TAG_CASE: "case"> { pushState(EXPRESSION); }
-| <TAG_COMPRESS: "compress"> { pushState(EXPRESSION); }
-| <TAG_DEFAULT: "default"> { pushState(EXPRESSION); }
-| <TAG_ELSE: "else"> { pushState(EXPRESSION); } 
-| <TAG_ELSEIF: "elseif"> { pushState(EXPRESSION); } 
-| <TAG_ESCAPE: "escape"> { pushState(EXPRESSION); } 
-| <TAG_FALLBACK: "fallback"> { pushState(EXPRESSION); } 
-| <TAG_FUNCTION: "function"> { pushState(EXPRESSION); } 
-| <TAG_FLUSH: "flush"> { pushState(EXPRESSION); } 
-| <TAG_FTL: "ftl"> { pushState(EXPRESSION); } 
-| <TAG_GLOBAL: "global"> { pushState(EXPRESSION); } 
-| <TAG_IF: "if"> { pushState(EXPRESSION); } 
-| <TAG_IMPORT: "import"> { pushState(EXPRESSION); } 
-| <TAG_INCLUDE: "include"> { pushState(EXPRESSION); } 
-| <TAG_ITEMS: "items"> { pushState(EXPRESSION); } 
-| <TAG_LIST: "list"> { pushState(EXPRESSION); }
-| <TAG_LOCAL: "local"> { pushState(EXPRESSION); } 
-| <TAG_LT: "lt"> { pushState(EXPRESSION); } 
-| <TAG_MACRO: "macro"> { pushState(EXPRESSION); } 
-| <TAG_NESTED: "nested"> { pushState(EXPRESSION); } 
-| <TAG_NOESCAPE: "noescape"> { pushState(EXPRESSION); } 
-| <TAG_NT: "nt"> { pushState(EXPRESSION); } 
-| <TAG_RECOVER: "recover"> { pushState(EXPRESSION); } 
-| <TAG_RECURSE: "recurse"> { pushState(EXPRESSION); } 
-| <TAG_RETURN: "return"> { pushState(EXPRESSION); } 
-| <TAG_SEP: "sep"> { pushState(EXPRESSION); } 
-| <TAG_SETTING: "setting"> { pushState(EXPRESSION); } 
-| <TAG_STOP: "stop"> { pushState(EXPRESSION); } 
-| <TAG_SWITCH: "switch"> { pushState(EXPRESSION); } 
-| <TAG_RT: "rt"> { pushState(EXPRESSION); } 
-| <TAG_T: "t"> { pushState(EXPRESSION); } 
-| <TAG_VISIT: "visit"> { pushState(EXPRESSION); }
-| <TAG_ILLEGAL: (~[ "\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
+  < EXPRESSION_START: "${"> { pushState(CEXPRESSION); } // DONE
+| <TAG_NOPARSE: "<#noparse>"> : NOPARSE //DONE
+| <TAG_COMMENT: "<#--"> : COMMENT //DONE
+| <TAG_ASSIGN: "<#assign"> { pushState(EXPRESSION); } // DONE
+| <TAG_ATTEMPT: "<#attempt"> { pushState(EXPRESSION); } // DONE
+| <TAG_BREAK: "<#break"> { pushState(EXPRESSION); }
+| <TAG_CASE: "<#case"> { pushState(EXPRESSION); }
+| <TAG_COMPRESS: "<#compress"> { pushState(EXPRESSION); } // DONE
+| <TAG_DEFAULT: "<#default"> { pushState(EXPRESSION); }
+| <TAG_ELSE: "<#else"> { pushState(EXPRESSION); } // DONE
+| <TAG_ELSEIF: "<#elseif"> { pushState(EXPRESSION); } // DONE
+| <TAG_ESCAPE: "<#escape"> { pushState(EXPRESSION); } // DONE
+| <TAG_FALLBACK: "<#fallback"> { pushState(EXPRESSION); }
+| <TAG_FUNCTION: "<#function"> { pushState(EXPRESSION); } // DONE
+| <TAG_FLUSH: "<#flush"> { pushState(EXPRESSION); }
+| <TAG_FTL: "<#ftl"> { pushState(EXPRESSION); }
+| <TAG_GLOBAL: "<#global"> { pushState(EXPRESSION); } // DONE
+| <TAG_IF: "<#if"> { pushState(EXPRESSION); } // DONE
+| <TAG_IMPORT: "<#import"> { pushState(EXPRESSION); } // DONE
+| <TAG_INCLUDE: "<#include"> { pushState(EXPRESSION); } // DONE
+| <TAG_ITEMS: "<#items"> { pushState(EXPRESSION); }
+| <TAG_LIST: "<#list"> { pushState(EXPRESSION); }
+| <TAG_LOCAL: "<#local"> { pushState(EXPRESSION); }
+| <TAG_LT: "<#lt"> { pushState(EXPRESSION); }
+| <TAG_MACRO: "<#macro"> { pushState(EXPRESSION); }
+| <TAG_NESTED: "<#nested"> { pushState(EXPRESSION); }
+| <TAG_NOESCAPE: "<#noescape"> { pushState(EXPRESSION); }
+| <TAG_NT: "<#nt"> { pushState(EXPRESSION); }
+| <TAG_RECOVER: "<#recover"> { pushState(EXPRESSION); } // DONE
+| <TAG_RECURSE: "<#recurse"> { pushState(EXPRESSION); }
+| <TAG_RETURN: "<#return"> { pushState(EXPRESSION); }
+| <TAG_SEP: "<#sep"> { pushState(EXPRESSION); }
+| <TAG_SETTING: "<#setting"> { pushState(EXPRESSION); }
+| <TAG_STOP: "<#stop"> { pushState(EXPRESSION); }
+| <TAG_SWITCH: "<#switch"> { pushState(EXPRESSION); }
+| <TAG_RT: "<#rt"> { pushState(EXPRESSION); }
+| <TAG_T: "<#t"> { pushState(EXPRESSION); }
+| <TAG_VISIT: "<#visit"> { pushState(EXPRESSION); }
+| <TAG_ILLEGAL: ("<#" ~[ "\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
                   "\u2001", "\u2002", "\u2003", "\u2004", "\u2005",
                   "\u2006", "\u2007", "\u2008", "\u2009", "\u200A",
                   "\u200B", "\u202F", "\u205F", "\u3000", "\uFEFF",
                   "\n", "\u000b", "\u000c", "\r", "\u0085",
                   "\u2028", "\u2029"])+>
+| <TAGEND_ASSIGN: "</#assign>">
+| <TAGEND_ATTEMPT: "</#attempt>">
+| <TAGEND_CASE: "</#case>">
+| <TAGEND_COMPRESS: "</#compress>">
+| <TAGEND_ESCAPE: "</#escape>">
+| <TAGEND_FALLBACK: "</#fallback>">
+| <TAGEND_FUNCTION: "</#function>">
+| <TAGEND_FLUSH: "</#flush>">
+| <TAGEND_FTL: "</#ftl>">
+| <TAGEND_GLOBAL: "</#global>">
+| <TAGEND_IF: "</#if>">
+| <TAGEND_INCLUDE: "</#include>">
+| <TAGEND_ITEMS: "</#items>">
+| <TAGEND_LIST: "</#list>">
+| <TAGEND_LOCAL: "</#local>">
+| <TAGEND_LT: "</#lt>">
+| <TAGEND_MACRO: "</#macro>">
+| <TAGEND_NESTED: "</#nested>">
+| <TAGEND_NOESCAPE: "</#noescape>">
+| <TAGEND_NT: "</#nt>">
+| <TAGEND_RECURSE: "</#recurse>">
+| <TAGEND_RETURN: "</#return>">
+| <TAGEND_SEP: "</#sep>">
+| <TAGEND_SETTING: "</#setting>">
+| <TAGEND_STOP: "</#stop>">
+| <TAGEND_SWITCH: "</#switch>">
+| <TAGEND_RT: "</#rt>">
+| <TAGEND_T: "</#t>">
+| <TAGEND_VISIT: "</#visit>">
+| <TAGEND_ILLEGAL: ("</#" ~[ "\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
+                  "\u2006", "\u2007", "\u2008", "\u2009", "\u200A",
+                  "\u200B", "\u202F", "\u205F", "\u3000", "\uFEFF",
+                  "\n", "\u000b", "\u000c", "\r", "\u0085",
+                  "\u2028", "\u2029"])+>
+| <MACROCALL_START: "<@" > { pushState(EXPRESSION); }
+| <MACROCALL_END: "</@" > { pushState(EXPRESSION); }
+| <CONTENT: (~[ "$", "<"])+ | ~[]>
 }
+
 
 <CEXPRESSION,EXPRESSION> SKIP : {
   <([ "\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
@@ -151,8 +205,10 @@ TOKEN_MGR_DECLS : {
 | <BRACET_OPEN: "("> { pushState(CEXPRESSION); }
 | <BRACET_CLOSE: ")"> { popState(); }
 | <QUESTIONMARK: "?">
-| <KEY_TO: "to">
-| <KEY_AS: "as">
+// TODO THESE THINGS ARE NOT KEYWORDS AT MOST PLALCES
+ // JUST IN LIST AND STUFF. MAYBE I NEED TO MAKE THE PARSER BETTER ????
+//| <KEY_TO: "to">
+//| <KEY_AS: "as">
 |  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
 |  < #LETTER:
       [
@@ -209,7 +265,7 @@ TOKEN_MGR_DECLS : {
 
 
 <NOPARSE> TOKEN : {
-  <NOPARSE_END: "</#noparse>" > : DEFAULT
+  <TAGEND_NOPARSE: "</#noparse>" > : DEFAULT
 | <NOPARSE_CONTENT: (~[ "<" ])+ | ~[]>
 }
 
@@ -248,33 +304,42 @@ TOKEN: {
 }
 
 
-Node start() :
+Node start(ParseState state) :
 { Node result; }
 {
-  result = sequence() <EOF> { return result; }
+  result = sequence(state) <EOF> { return result; }
 }
 
-Node sequence() :
+Node sequence(ParseState state) :
 {
-  SequenceNodeBuilder builder = new SequenceNodeBuilder();
+  SequenceNodeBuilder builder = SequenceNodeBuilder.create(state);
   Node node;
   Token token;
 }
 {
   (
-   ( node=directive()
-    |node=content()
-    |node=inlineexpression()
+   ( node=directive(state)
+    |node=content(state)
+    |node=inlineexpression(state)
    ) { builder.add(node); })*
   { return builder.build(); }
 }
 
-Node directive() :
+Node directive(ParseState state) :
 { Node result; }
-{ <DIRECTIVE_START>
-  (  (<TAG_NOPARSE> result=noparse())
-   | (<TAG_COMMENT> result=comment())
-   | (<TAG_ATTEMPT> result=attempt())
+{
+  (  (<TAG_NOPARSE> result=noparse(state))
+   | (<TAG_COMMENT> result=comment(state))
+   | (<TAG_ASSIGN> result=assign(state))
+   | (<TAG_ATTEMPT> result=attempt(state))
+   | (<TAG_COMPRESS> result=compress(state))
+   | (<TAG_ESCAPE> result=escape(state))
+   | (<TAG_FUNCTION> result=function(state))
+   | (<TAG_GLOBAL> result=global(state))
+   | (<TAG_IF> result=ifNode(state))
+   | (<TAG_IMPORT> result=importNode(state))
+   | (<TAG_INCLUDE> result=include(state))
+   | (<TAG_LIST> result=list(state))
   ){ return result; }
 }
 
@@ -282,9 +347,9 @@ Node directive() :
 // DIRECTIVES       //
 //////////////////////
 
-Node comment() :
+Node comment(ParseState state) :
 {
-  CommentNodeBuilder builder = new CommentNodeBuilder();
+  CommentNodeBuilder builder = CommentNodeBuilder.create(state);
   Token token;
 }
 {
@@ -292,56 +357,249 @@ Node comment() :
   { return builder.build(); }
 }
 
-Node content() :
+Node content(ParseState state) :
 {
+  ContentNodeBuilder builder = ContentNodeBuilder.create(state);
   Token token;
 }
 {
-  token = <CONTENT> { return new ContentNode(token.image); }
+  token = <CONTENT> { builder.add(token); return builder.build(); }
 }
 
 
-Node noparse() :
+Node noparse(ParseState state) :
 {
-  NoparseNodeBuilder builder = new NoparseNodeBuilder();
+  NoparseNodeBuilder builder = NoparseNodeBuilder.create(state);
   Token token;
 }
 {
-  (token = <NOPARSE_CONTENT> { builder.add(token.image); })* <NOPARSE_END>
+  (token = <NOPARSE_CONTENT> { builder.content(token); })* <TAGEND_NOPARSE>
   { return builder.build(); }
 }
 
-Node attempt() :
+Node attempt(ParseState state) :
 {
-  Node attempt;
-  Node recover;
+  AttemptNodeBuilder builder = AttemptNodeBuilder.create(state);
+  Node node;
 }
 {
   <TAG_END>
-    attempt=sequence()
-  <DIRECTIVE_START>
-    recover=sequence() <DIRECTIVE_END> <TAG_ATTEMPT> <TAG_END>
-    { return new AttemptNode(attempt, recover); }
+    node=sequence(state) { builder.attempt(node); }
+  <TAG_RECOVER> <TAG_END>
+    node=sequence(state) { builder.recover(node); }
+  <TAGEND_ATTEMPT>
+  { return builder.build(); }
+}
+
+Node assign(ParseState state) :
+{
+  AssignNodeBuilder builder = AssignNodeBuilder.create(state);
+  String variableName;
+  Node valueNode;
+  builder.scope("default");
+}
+{
+  variableName = variableName(state) { builder.name(variableName); }
+  ( (<EQUALS> valueNode=expression(state) (<TAG_END> | <EMPTY_TAG_END>))
+   |(<TAG_END> valueNode=sequence(state) <TAGEND_ASSIGN>)
+  )
+  {
+    builder.value(valueNode);
+    return builder.build();
+  }
+}
+
+Node compress(ParseState state) :
+{
+  CompressNodeBuilder builder = CompressNodeBuilder.create(state);
+  Node content;
+}
+{
+  <TAG_END> content = sequence(state) <TAGEND_COMPRESS>
+  {
+    builder.content(content);
+    return builder.build();
+  }
 }
 
 
+Node escape(ParseState state) :
+{
+  EscapeNodeBuilder builder = EscapeNodeBuilder.create(state);
+  String name;
+  Token keyword;
+  Node expression;
+  Node content;
+}
+{
+  name = variableName(state) { builder.name(name); }
+  keyword = <IDENTIFIER> { builder.keyword(keyword); }
+  expression = expression(state) <TAG_END> { builder.expression(expression); }
+  content = sequence(state) { builder.content(content); }
+  <TAGEND_ESCAPE>
+  { return builder.build(); }
+}
+
+Node function(ParseState state) :
+{
+ FunctionNodeBuilder builder = FunctionNodeBuilder.create(state);
+ String name;
+ Node defVal;
+ Node body;
+}
+{
+  name = variableName(state) { builder.name(name); }
+  (
+    (name=variableName(state) { builder.param(name); })+
+    ( <EQUALS> defVal=expression(state) { builder.def(defVal); }
+     (name=variableName(state) <EQUALS> defVal=expression(state)
+     { builder.param(name); builder.def(defVal); })*
+    )?
+  )?
+  <TAG_END>
+  body=sequence(state) { builder.body(body); }
+  <TAGEND_FUNCTION>
+  { return builder.build(); }
+}
+
+Node global(ParseState state) :
+{
+  AssignNodeBuilder builder = AssignNodeBuilder.create(state);
+  String variableName;
+  Node valueNode;
+  builder.scope("global");
+}
+{
+  variableName = variableName(state) { builder.name(variableName); }
+  ( (<EQUALS> valueNode=expression(state) (<TAG_END> | <EMPTY_TAG_END>))
+   |(<TAG_END> valueNode=sequence(state) <TAGEND_GLOBAL>)
+  )
+  {
+    builder.value(valueNode);
+    return builder.build();
+  }
+}
 
 
+Node ifNode(ParseState state) :
+{
+  IfNodeBuilder builder = IfNodeBuilder.create(state);
+  Node condition;
+  Node content;
+}
+{
+  (condition=expression(state) <TAG_END>
+   content=sequence(state) { builder.add(condition,content); })
+  (<TAG_ELSEIF> condition=expression(state) <TAG_END>
+    content=sequence(state) { builder.add(condition,content); })*
+  (<TAG_ELSE> <TAG_END> content=sequence(state) { builder.add(null, content); })?
+  <TAGEND_IF>
+  { return builder.build(); }
+}
 
+Node importNode(ParseState state) :
+{
+  ImportNodeBuilder builder = ImportNodeBuilder.create(state);
+  Node path;
+  Token keyword;
+  String name;
+}
+{
+  path=expression(state) { builder.path(path); }
+  keyword=<IDENTIFIER> { builder.keyword(keyword); }
+  name=variableName(state) { builder.name(name); }
+  (<TAG_END> | <EMPTY_TAG_END>)
+  { return builder.build(); }
+}
+
+Node include(ParseState state) :
+{
+  IncludeNodeBuilder builder = IncludeNodeBuilder.create(state);
+  Node path;
+  Token oname;
+  Node ovalue;
+}
+{
+  path=expression(state) { builder.path(path); }
+  (oname=<IDENTIFIER> <EQUALS> ovalue=expression(state)
+  { builder.option(oname, ovalue); })*
+  (<TAG_END> | <EMPTY_TAG_END>)
+  { return builder.build(); }
+}
+
+Node list(ParseState state) :
+{
+  Node expression;
+  Node result;
+}
+{
+  expression=expression(state)
+ (
+   (<TAG_END> result=listType2(state, expression))
+  | result=listType1(state, expression))
+  { return result; }
+}
+
+Node listType1(ParseState state, Node expression) :
+{
+  ListNodeBuilder builder = ListNodeBuilder.create(state);
+  builder.expression(expression);
+}
+{
+  <IDENTIFIER> variableName(state)
+   (<COMMA> variableName(state))?<TAG_END>
+  sequence(state)
+  (<TAG_SEP> <TAG_END>
+  sequence(state)
+  (<TAGEND_SEP> sequence(state))?)?
+  (<TAG_ELSE> <TAG_END> sequence(state))?
+  <TAGEND_LIST>
+  { return builder.build(); }
+}
+
+Node listType2(ParseState state, Node expression) :
+{
+  ListNodeBuilder builder = ListNodeBuilder.create(state);
+  builder.expression(expression);
+}
+{
+  sequence(state)
+  <TAG_ITEMS> <IDENTIFIER> variableName(state)
+   (<COMMA> variableName(state))?<TAG_END>
+  sequence(state)
+  (<TAG_SEP> <TAG_END>
+  sequence(state)
+  (<TAGEND_SEP> sequence(state))?)?
+  <TAGEND_ITEMS>
+  sequence(state)
+  (<TAG_ELSE> <TAG_END> sequence(state))?
+  <TAGEND_LIST>
+  { return builder.build(); }
+}
 
 //////////////////////
 // EXPRESSIONS      //
 //////////////////////
-Node inlineexpression() :
+
+String variableName(ParseState state) :
+{
+  Token token;
+}
+{
+  token=<IDENTIFIER>
+  { return token.image; }
+}
+
+Node inlineexpression(ParseState state) :
 {
 }
 {
-  <EXPRESSION_START> expression() <CURLY_CLOSE>
+  <EXPRESSION_START> expression(state) <CURLY_CLOSE>
   { return new InlineExpressionNode(); }
 }
 
-Node expression() :
+Node expression(ParseState state) :
 {}
 {
-  <IDENTIFIER> { return null; }
+  <IDENTIFIER> { return new InlineExpressionNode(); }
 }

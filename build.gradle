@@ -7,6 +7,7 @@ buildscript {
   }
 }
 plugins {
+  id "nebula.optional-base" version "3.1.0"
   id "ca.coglinc.javacc" version "2.4.0"
 }
 
@@ -24,9 +25,8 @@ targetCompatibility = 1.8
 
 dependencies {
   javacc 'net.java.dev.javacc:javacc:7.0.2'
-  compile 'com.google.guava:guava:21.0'
-  compile 'com.google.code.findbugs:jsr305:3.0.1'
-  testCompile group: 'junit', name: 'junit', version: '4.12'
+  compile 'com.google.code.findbugs:jsr305:3.0.1', optional
+  testCompile 'junit:junit:4.12'
   testCompile 'org.freemarker:freemarker:2.3.25-incubating'
 }
 

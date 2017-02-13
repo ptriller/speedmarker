@@ -1,9 +1,11 @@
 package de.soapwars.speedmarker;
 
+import de.soapwars.speedmarker.ast.ParseState;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Scanner;
 
 /**
  * Created by ptriller on 11.02.2017.
@@ -11,34 +13,77 @@ import java.io.InputStream;
 public class SpeedMarkerParserTest {
 
   @Test
-  public void testComment() throws Exception {
-    try(InputStream is = SpeedmarkerTokenTest.class.getResourceAsStream("parse_comment.txt")) {
-      SpeedMarkerParser parser = new SpeedMarkerParser(is, "UTF-8");
-      Assert.assertEquals("(<#-- adssdfhsdf <#-- ${ -->)", parser.start().debugTree());
-    }
+  public void testAssign() throws Exception {
+    testFile("assign");
   }
+
+  @Test
+  public void testAttempt() throws Exception {
+    testFile("attempt");
+  }
+
+  @Test
+  public void testComment() throws Exception {
+    testFile("comment");
+  }
+
+  @Test
+  public void testCompress() throws Exception {
+    testFile("compress");
+  }
+
   @Test
   public void testContent() throws Exception {
-    try(InputStream is = SpeedmarkerTokenTest.class.getResourceAsStream("parse_content.txt")) {
-      SpeedMarkerParser parser = new SpeedMarkerParser(is, "UTF-8");
-      Assert.assertEquals("(\"dsfsdfds  sdf sdf < dsf sdf $ sdf \",<#-- stuff -->,\" sdf $ sdf < dsf\")"
-          , parser.start().debugTree());
-    }
+    testFile("content");
   }
+
+  @Test
+  public void testEscape() throws Exception {
+    testFile("escape");
+  }
+
+  @Test
+  public void testFunction() throws Exception {
+    testFile("function");
+  }
+
 
   @Test
   public void testInlineExpression() throws Exception {
-    try(InputStream is = SpeedmarkerTokenTest.class.getResourceAsStream("parse_inlineexpression.txt")) {
-      SpeedMarkerParser parser = new SpeedMarkerParser(is, "UTF-8");
-      Assert.assertEquals("(\"sdfsdf sdf $ds \",${ ..... },\" $ }}}\")", parser.start().debugTree());
-    }
+    testFile("inlineexpression");
   }
 
   @Test
-  public void tesNoParse() throws Exception {
-    try(InputStream is = SpeedmarkerTokenTest.class.getResourceAsStream("parse_noparse.txt")) {
+  public void testNoParse() throws Exception {
+    testFile("noparse");
+  }
+
+  @Test
+  public void testIf() throws Exception {
+    testFile("if");
+  }
+
+  @Test
+  public void testImport() throws Exception {
+    testFile("import");
+  }
+
+  @Test
+  public void testInclude() throws Exception {
+    testFile("include");
+  }
+
+  @Test
+  public void testList() throws Exception {
+    testFile("list");
+  }
+
+  private void testFile(String testName) throws Exception {
+    try (InputStream is = SpeedmarkerTokenTest.class.getResourceAsStream(testName + "_input.ftl")) {
       SpeedMarkerParser parser = new SpeedMarkerParser(is, "UTF-8");
-      Assert.assertEquals("(\"asdfasdfasd <#-- testme --> ${again} sdfsdf\")", parser.start().debugTree());
+      String expected = new Scanner(SpeedmarkerTokenTest.class.getResourceAsStream(testName + "_expected.txt"))
+          .useDelimiter("\\A").next();
+      Assert.assertEquals(expected, parser.start(new ParseState()).debugTree());
     }
   }
 

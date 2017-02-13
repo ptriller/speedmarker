@@ -23,6 +23,6 @@ public class AttemptNode implements Node {
 
   @Override
   public String debugTree() {
-    return "[ 'attempt' ," + attempt.debugTree() + "," + recover + " ]";
+    return "[ 'attempt' ," + attempt.debugTree() + "," + recover.debugTree() + " ]";
   }
 }
