@@ -35,4 +35,8 @@ public class SpeedMarkerModel {
     }
     return null;
   }
+
+  public void add(Map<String, Object> param) {
+    model.putAll(param);
+  }
 }

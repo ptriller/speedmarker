@@ -33,5 +33,7 @@ dependencies {
 idea {
   module {
     sourceDirs += file('build/generated/javacc')
+    downloadJavadoc = true
+    downloadSources = true
   }
 }

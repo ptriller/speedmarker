@@ -3,6 +3,8 @@ package de.soapwars.speedmarker.ast.node;
 import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.Node;
 import de.soapwars.speedmarker.SpeedMarkerModel;
+import de.soapwars.speedmarker.Value;
+import de.soapwars.speedmarker.ValueType;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -29,7 +31,20 @@ public class IfNode implements Node {
 
   @Override
   public void render(Writer writer, SpeedMarkerModel model) throws IOException {
-    // TODO
+    for (Conditional block : blocks) {
+      if (isActiveBlock(model, block.condition)) {
+        block.body.render(writer, model);
+        return;
+      }
+    }
+  }
+
+  private boolean isActiveBlock(SpeedMarkerModel model, Expression condition) {
+    if (condition == null) {
+      return true;
+    }
+    Value value = condition.getValue(model);
+    return value != null && value.getType() == ValueType.BOOLEAN && (Boolean) value.getValue();
   }
 
   @Override
