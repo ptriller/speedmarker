@@ -1,8 +1,8 @@
 package de.soapwars.speedmarker.ast.builder;
 
+import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.Node;
-import de.soapwars.speedmarker.ast.IfNode;
-import de.soapwars.speedmarker.ast.ParseState;
+import de.soapwars.speedmarker.ast.node.IfNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +14,7 @@ public class IfNodeBuilder {
 
   private List<IfNode.Conditional> conditionals = new ArrayList<>();
 
-  public static IfNodeBuilder create(ParseState state) {
-    return new IfNodeBuilder();
-  }
-
-  public void add(Node condition, Node body) {
+  public void add(Expression condition, Node body) {
     conditionals.add(new IfNode.Conditional(condition, body));
   }
 

@@ -1,9 +1,8 @@
 package de.soapwars.speedmarker.ast.builder;
 
+import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.Node;
-import de.soapwars.speedmarker.Token;
-import de.soapwars.speedmarker.ast.FunctionNode;
-import de.soapwars.speedmarker.ast.ParseState;
+import de.soapwars.speedmarker.ast.node.FunctionNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +20,6 @@ public class FunctionNodeBuilder {
 
   private Node body;
 
-  public static FunctionNodeBuilder create(ParseState state) {
-    return new FunctionNodeBuilder();
-  }
-
   public void name(String name) {
     this.name = name;
   }
@@ -34,7 +29,7 @@ public class FunctionNodeBuilder {
     paramName = param;
   }
 
-  public void def(Node expression) {
+  public void def(Expression expression) {
     resolveParam(expression);
   }
 
@@ -42,7 +37,7 @@ public class FunctionNodeBuilder {
     this.body = body;
   }
 
-  private void resolveParam(Node expression) {
+  private void resolveParam(Expression expression) {
     if (paramName != null) {
       params.add(new FunctionNode.FunctionParam(paramName, expression));
       paramName = null;

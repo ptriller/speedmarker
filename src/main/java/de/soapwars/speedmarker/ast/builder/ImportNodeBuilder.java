@@ -1,10 +1,9 @@
 package de.soapwars.speedmarker.ast.builder;
 
-import de.soapwars.speedmarker.Node;
+import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.ParseException;
 import de.soapwars.speedmarker.Token;
-import de.soapwars.speedmarker.ast.ImportNode;
-import de.soapwars.speedmarker.ast.ParseState;
+import de.soapwars.speedmarker.ast.node.ImportNode;
 
 /**
  * Created by ptriller on 12.02.2017.
@@ -13,11 +12,7 @@ public class ImportNodeBuilder {
 
   private String name;
 
-  private Node path;
-
-  public static ImportNodeBuilder create(ParseState state) {
-    return new ImportNodeBuilder();
-  }
+  private Expression path;
 
   public void name(String name) {
     this.name = name;
@@ -31,7 +26,7 @@ public class ImportNodeBuilder {
     }
   }
 
-  public void path(Node path) {
+  public void path(Expression path) {
     this.path = path;
   }
 

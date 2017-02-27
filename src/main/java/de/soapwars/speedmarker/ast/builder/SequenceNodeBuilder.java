@@ -1,9 +1,8 @@
 package de.soapwars.speedmarker.ast.builder;
 
 import de.soapwars.speedmarker.Node;
-import de.soapwars.speedmarker.ast.ContentNode;
-import de.soapwars.speedmarker.ast.ParseState;
-import de.soapwars.speedmarker.ast.SequenceNode;
+import de.soapwars.speedmarker.ast.node.ContentNode;
+import de.soapwars.speedmarker.ast.node.SequenceNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +15,6 @@ public class SequenceNodeBuilder {
   private final List<Node> nodes = new ArrayList<>();
 
   private StringBuilder contentBuilder = null;
-
-  public static SequenceNodeBuilder create(ParseState state) {
-    return new SequenceNodeBuilder();
-  }
 
   public void add(Node node) {
     if (node instanceof ContentNode) {

@@ -1,8 +1,7 @@
 package de.soapwars.speedmarker.ast.builder;
 
 import de.soapwars.speedmarker.Token;
-import de.soapwars.speedmarker.ast.ContentNode;
-import de.soapwars.speedmarker.ast.ParseState;
+import de.soapwars.speedmarker.ast.node.ContentNode;
 
 /**
  * Created by ptriller on 12.02.2017.
@@ -10,10 +9,6 @@ import de.soapwars.speedmarker.ast.ParseState;
 public class NoparseNodeBuilder {
 
   private StringBuilder builder = new StringBuilder();
-
-  public static NoparseNodeBuilder create(ParseState state) {
-    return new NoparseNodeBuilder();
-  }
 
   public void content(Token content) {
     builder.append(content.image);

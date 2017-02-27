@@ -80,7 +80,7 @@ public class SpeedMarkerParserTest {
 
   private void testFile(String testName) throws Exception {
     try (InputStream is = SpeedmarkerTokenTest.class.getResourceAsStream(testName + "_input.ftl")) {
-      SpeedMarkerParser parser = new SpeedMarkerParser(is, "UTF-8");
+      SpeedMarkerParser parser = new SpeedMarkerParser(new DefaultNodeBuilderFactory(), is, "UTF-8");
       String expected = new Scanner(SpeedmarkerTokenTest.class.getResourceAsStream(testName + "_expected.txt"))
           .useDelimiter("\\A").next();
       Assert.assertEquals(expected, parser.start(new ParseState()).debugTree());

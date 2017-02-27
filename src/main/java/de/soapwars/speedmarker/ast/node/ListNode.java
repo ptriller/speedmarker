@@ -1,4 +1,4 @@
-package de.soapwars.speedmarker.ast;
+package de.soapwars.speedmarker.ast.node;
 
 import de.soapwars.speedmarker.Node;
 

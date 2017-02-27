@@ -1,8 +1,9 @@
 package de.soapwars.speedmarker.ast.builder;
 
+import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.Node;
-import de.soapwars.speedmarker.ast.AssignNode;
-import de.soapwars.speedmarker.ast.ParseState;
+import de.soapwars.speedmarker.ast.expression.NodeExpression;
+import de.soapwars.speedmarker.ast.node.AssignNode;
 
 /**
  * Created by ptriller on 13.02.2017.
@@ -13,11 +14,7 @@ public class AssignNodeBuilder {
 
   private String name;
 
-  private Node value;
-
-  public static AssignNodeBuilder create(ParseState state) {
-    return new AssignNodeBuilder();
-  }
+  private Expression value;
 
   public void scope(String scope) {
     this.scope = scope;
@@ -28,6 +25,10 @@ public class AssignNodeBuilder {
   }
 
   public void value(Node value) {
+    this.value = new NodeExpression(value);
+  }
+
+  public void value(Expression value) {
     this.value = value;
   }
 

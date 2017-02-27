@@ -1,8 +1,7 @@
 package de.soapwars.speedmarker.ast.builder;
 
 import de.soapwars.speedmarker.Node;
-import de.soapwars.speedmarker.ast.CompressNode;
-import de.soapwars.speedmarker.ast.ParseState;
+import de.soapwars.speedmarker.ast.node.CompressNode;
 
 /**
  * Created by ptriller on 13.02.2017.
@@ -10,10 +9,6 @@ import de.soapwars.speedmarker.ast.ParseState;
 public class CompressNodeBuilder {
 
   private Node content;
-
-  public static CompressNodeBuilder create(ParseState state) {
-    return new CompressNodeBuilder();
-  }
 
   public void content(Node content) {
     this.content = content;

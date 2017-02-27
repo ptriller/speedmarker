@@ -1,10 +1,9 @@
 package de.soapwars.speedmarker.ast.builder;
 
-import de.soapwars.speedmarker.Node;
+import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.ParseException;
 import de.soapwars.speedmarker.Token;
-import de.soapwars.speedmarker.ast.IncludeNode;
-import de.soapwars.speedmarker.ast.ParseState;
+import de.soapwars.speedmarker.ast.node.IncludeNode;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -25,16 +24,12 @@ public class IncludeNodeBuilder {
   }
 
   @Nonnull
-  private Node path;
+  private Expression path;
 
   @Nonnull
-  private Map<String, Node> options = new HashMap<>();
+  private Map<String, Expression> options = new HashMap<>();
 
-  public static IncludeNodeBuilder create(ParseState state) {
-    return new IncludeNodeBuilder();
-  }
-
-  public void option(Token name, Node value) throws ParseException {
+  public void option(Token name, Expression value) throws ParseException {
     if (!VALID_OPTIONS.contains(name.image)) {
       throw new ParseException("Encountered \"" + name.image + "\" at line "
           + name.beginLine + ", column: " + name.beginColumn
@@ -44,7 +39,7 @@ public class IncludeNodeBuilder {
     options.put(name.image, value);
   }
 
-  public void path(Node path) {
+  public void path(Expression path) {
     this.path = path;
   }
 

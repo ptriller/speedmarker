@@ -31,23 +31,22 @@ JavaLetterOrDigit
 
 */
 
-PARSER_BEGIN(SpeedMarkerParser)
+PARSER_BEGIN(SpeedMarkerParserBase)
 package de.soapwars.speedmarker;
 
 import de.soapwars.speedmarker.ast.*;
+import de.soapwars.speedmarker.ast.node.*;
+import de.soapwars.speedmarker.ast.expression.*;
 import de.soapwars.speedmarker.ast.builder.*;
 
 /** Simple brace matcher. */
-public class SpeedMarkerParser {
+public class SpeedMarkerParserBase {
 
-  /** Main entry point. */
-  public static void main(String args[]) throws ParseException {
-    SpeedMarkerParser parser = new SpeedMarkerParser(System.in);
-  }
+    protected NodeBuilderFactory builderFactory;
 
 }
 
-PARSER_END(SpeedMarkerParser)
+PARSER_END(SpeedMarkerParserBase)
 
 TOKEN_MGR_DECLS : {
 
@@ -312,7 +311,7 @@ Node start(ParseState state) :
 
 Node sequence(ParseState state) :
 {
-  SequenceNodeBuilder builder = SequenceNodeBuilder.create(state);
+  SequenceNodeBuilder builder = builderFactory.sequenceNode(state);
   Node node;
   Token token;
 }
@@ -349,7 +348,7 @@ Node directive(ParseState state) :
 
 Node comment(ParseState state) :
 {
-  CommentNodeBuilder builder = CommentNodeBuilder.create(state);
+  CommentNodeBuilder builder = builderFactory.commentNode(state);
   Token token;
 }
 {
@@ -359,7 +358,7 @@ Node comment(ParseState state) :
 
 Node content(ParseState state) :
 {
-  ContentNodeBuilder builder = ContentNodeBuilder.create(state);
+  ContentNodeBuilder builder = builderFactory.contentNode(state);
   Token token;
 }
 {
@@ -369,7 +368,7 @@ Node content(ParseState state) :
 
 Node noparse(ParseState state) :
 {
-  NoparseNodeBuilder builder = NoparseNodeBuilder.create(state);
+  NoparseNodeBuilder builder = builderFactory.noparseNode(state);
   Token token;
 }
 {
@@ -379,7 +378,7 @@ Node noparse(ParseState state) :
 
 Node attempt(ParseState state) :
 {
-  AttemptNodeBuilder builder = AttemptNodeBuilder.create(state);
+  AttemptNodeBuilder builder = builderFactory.attemptNode(state);
   Node node;
 }
 {
@@ -393,25 +392,25 @@ Node attempt(ParseState state) :
 
 Node assign(ParseState state) :
 {
-  AssignNodeBuilder builder = AssignNodeBuilder.create(state);
+  AssignNodeBuilder builder = builderFactory.assignNode(state);
   String variableName;
+  Expression valueExpresion;
   Node valueNode;
   builder.scope("default");
 }
 {
   variableName = variableName(state) { builder.name(variableName); }
-  ( (<EQUALS> valueNode=expression(state) (<TAG_END> | <EMPTY_TAG_END>))
-   |(<TAG_END> valueNode=sequence(state) <TAGEND_ASSIGN>)
+  ( (<EQUALS> valueExpresion=expression(state) (<TAG_END> | <EMPTY_TAG_END>){ builder.value(valueExpresion); })
+   |(<TAG_END> valueNode=sequence(state) <TAGEND_ASSIGN>{ builder.value(valueNode); })
   )
   {
-    builder.value(valueNode);
     return builder.build();
   }
 }
 
 Node compress(ParseState state) :
 {
-  CompressNodeBuilder builder = CompressNodeBuilder.create(state);
+  CompressNodeBuilder builder = builderFactory.compressNode(state);
   Node content;
 }
 {
@@ -425,10 +424,10 @@ Node compress(ParseState state) :
 
 Node escape(ParseState state) :
 {
-  EscapeNodeBuilder builder = EscapeNodeBuilder.create(state);
+  EscapeNodeBuilder builder = builderFactory.escapeNode(state);
   String name;
   Token keyword;
-  Node expression;
+  Expression expression;
   Node content;
 }
 {
@@ -442,9 +441,9 @@ Node escape(ParseState state) :
 
 Node function(ParseState state) :
 {
- FunctionNodeBuilder builder = FunctionNodeBuilder.create(state);
+ FunctionNodeBuilder builder = builderFactory.functionNode(state);
  String name;
- Node defVal;
+ Expression defVal;
  Node body;
 }
 {
@@ -464,18 +463,18 @@ Node function(ParseState state) :
 
 Node global(ParseState state) :
 {
-  AssignNodeBuilder builder = AssignNodeBuilder.create(state);
+  AssignNodeBuilder builder = builderFactory.globalNode(state);
   String variableName;
+  Expression valueExpresion;
   Node valueNode;
   builder.scope("global");
 }
 {
   variableName = variableName(state) { builder.name(variableName); }
-  ( (<EQUALS> valueNode=expression(state) (<TAG_END> | <EMPTY_TAG_END>))
-   |(<TAG_END> valueNode=sequence(state) <TAGEND_GLOBAL>)
+  ( (<EQUALS> valueExpresion=expression(state) (<TAG_END> | <EMPTY_TAG_END>){ builder.value(valueExpresion); })
+   |(<TAG_END> valueNode=sequence(state) <TAGEND_ASSIGN>{ builder.value(valueNode); })
   )
   {
-    builder.value(valueNode);
     return builder.build();
   }
 }
@@ -483,8 +482,8 @@ Node global(ParseState state) :
 
 Node ifNode(ParseState state) :
 {
-  IfNodeBuilder builder = IfNodeBuilder.create(state);
-  Node condition;
+  IfNodeBuilder builder = builderFactory.ifNode(state);
+  Expression condition;
   Node content;
 }
 {
@@ -499,8 +498,8 @@ Node ifNode(ParseState state) :
 
 Node importNode(ParseState state) :
 {
-  ImportNodeBuilder builder = ImportNodeBuilder.create(state);
-  Node path;
+  ImportNodeBuilder builder = builderFactory.importNode(state);
+  Expression path;
   Token keyword;
   String name;
 }
@@ -514,10 +513,10 @@ Node importNode(ParseState state) :
 
 Node include(ParseState state) :
 {
-  IncludeNodeBuilder builder = IncludeNodeBuilder.create(state);
-  Node path;
+  IncludeNodeBuilder builder = builderFactory.includeNode(state);
+  Expression path;
   Token oname;
-  Node ovalue;
+  Expression ovalue;
 }
 {
   path=expression(state) { builder.path(path); }
@@ -529,22 +528,20 @@ Node include(ParseState state) :
 
 Node list(ParseState state) :
 {
-  Node expression;
+  ListNodeBuilder builder = builderFactory.listNode(state);
+  Expression expression;
   Node result;
 }
 {
-  expression=expression(state)
+  expression=expression(state) { builder.expression(expression); }
  (
-   (<TAG_END> result=listType2(state, expression))
-  | result=listType1(state, expression))
+   (<TAG_END> result=listType2(builder, state))
+  | result=listType1(builder, state))
   { return result; }
 }
 
-Node listType1(ParseState state, Node expression) :
-{
-  ListNodeBuilder builder = ListNodeBuilder.create(state);
-  builder.expression(expression);
-}
+Node listType1(ListNodeBuilder builder, ParseState state) :
+{}
 {
   <IDENTIFIER> variableName(state)
    (<COMMA> variableName(state))?<TAG_END>
@@ -557,11 +554,8 @@ Node listType1(ParseState state, Node expression) :
   { return builder.build(); }
 }
 
-Node listType2(ParseState state, Node expression) :
-{
-  ListNodeBuilder builder = ListNodeBuilder.create(state);
-  builder.expression(expression);
-}
+Node listType2(ListNodeBuilder builder, ParseState state) :
+{}
 {
   sequence(state)
   <TAG_ITEMS> <IDENTIFIER> variableName(state)
@@ -592,14 +586,21 @@ String variableName(ParseState state) :
 
 Node inlineexpression(ParseState state) :
 {
+  InterpolationNodeBuilder builder = builderFactory.interpolationNode(state);
+  Expression ex;
 }
 {
-  <EXPRESSION_START> expression(state) <CURLY_CLOSE>
-  { return new InlineExpressionNode(); }
+  <EXPRESSION_START> ex = expression(state) <CURLY_CLOSE>
+  {
+    builder.expression(ex);
+    return builder.build();
+  }
 }
 
-Node expression(ParseState state) :
-{}
+Expression expression(ParseState state) :
 {
-  <IDENTIFIER> { return new InlineExpressionNode(); }
+  Token identifier;
+}
+{
+  identifier = <IDENTIFIER> { return new IdentifierExpression(identifier.image); }
 }

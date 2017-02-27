@@ -1,7 +1,10 @@
-package de.soapwars.speedmarker.ast;
+package de.soapwars.speedmarker.ast.node;
 
+import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.Node;
+import de.soapwars.speedmarker.SpeedMarkerModel;
 
+import java.io.Writer;
 import java.util.List;
 
 /**
@@ -9,20 +12,8 @@ import java.util.List;
  */
 public class FunctionNode implements Node {
 
-  public static class FunctionParam {
-    String name;
-    Node defValue;
-
-    public FunctionParam(String name, Node defValue) {
-      this.name = name;
-      this.defValue = defValue;
-    }
-  }
-
   private String name;
-
   private List<FunctionParam> parameter;
-
   private Node body;
 
   public FunctionNode(String name, List<FunctionParam> parameter, Node body) {
@@ -32,20 +23,40 @@ public class FunctionNode implements Node {
   }
 
   @Override
+  public boolean isStatic() {
+    return true;
+  }
+
+  @Override
+  public void render(Writer writer, SpeedMarkerModel model) {
+  }
+
+  @Override
   public String debugTree() {
     StringBuilder builder = new StringBuilder("[ 'function', <");
     builder.append(name);
     builder.append(">, ");
     for (FunctionParam functionParam : parameter) {
       builder.append(functionParam.name);
-      if(functionParam.defValue != null) {
-        builder.append("=");
+      if (functionParam.defValue != null) {
+        builder.append("={");
         builder.append(functionParam.defValue.debugTree());
+        builder.append('}');
       }
       builder.append(", ");
     }
     builder.append(body.debugTree());
     builder.append("]");
     return builder.toString();
+  }
+
+  public static class FunctionParam {
+    String name;
+    Expression defValue;
+
+    public FunctionParam(String name, Expression defValue) {
+      this.name = name;
+      this.defValue = defValue;
+    }
   }
 }

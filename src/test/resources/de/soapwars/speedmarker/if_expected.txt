@@ -1,4 +1,4 @@
-([ 'if' , ${ ..... }->("body")],"
-",[ 'if' , ${ ..... }->("body2"), ELSE->("body3")],"
-",[ 'if' , ${ ..... }->("body4"), ${ ..... }->("body5")],"
-",[ 'if' , ${ ..... }->("body6"), ${ ..... }->("body7"), ELSE->("body8")])
+([ 'if' , {test1}->("body")],"
+",[ 'if' , {test2}->("body2"), ELSE->("body3")],"
+",[ 'if' , {test3}->("body4"), {test4}->("body5")],"
+",[ 'if' , {test5}->("body6"), {test6}->("body7"), ELSE->("body8")])

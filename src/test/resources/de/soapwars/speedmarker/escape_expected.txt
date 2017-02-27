@@ -1,1 +1,1 @@
-([ 'escape', haus, ${ ..... }, ("socke")])
+([ 'escape', haus, {haus}, ("socke")])

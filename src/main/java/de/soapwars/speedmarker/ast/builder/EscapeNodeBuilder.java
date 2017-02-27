@@ -1,10 +1,10 @@
 package de.soapwars.speedmarker.ast.builder;
 
+import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.Node;
 import de.soapwars.speedmarker.ParseException;
 import de.soapwars.speedmarker.Token;
-import de.soapwars.speedmarker.ast.EscapeNode;
-import de.soapwars.speedmarker.ast.ParseState;
+import de.soapwars.speedmarker.ast.node.EscapeNode;
 
 /**
  * Created by ptriller on 12.02.2017.
@@ -13,13 +13,9 @@ public class EscapeNodeBuilder {
 
   private String name;
 
-  private Node expression;
+  private Expression expression;
 
   private Node content;
-
-  public static EscapeNodeBuilder create(ParseState state) {
-    return new EscapeNodeBuilder();
-  }
 
   public void name(String name) {
     this.name = name;
@@ -33,7 +29,7 @@ public class EscapeNodeBuilder {
     }
   }
 
-  public void expression(Node expression) {
+  public void expression(Expression expression) {
     this.expression = expression;
   }
 

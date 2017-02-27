@@ -1,1 +1,1 @@
-([ 'assign' , 'varname' = ${ ..... }],[ 'assign' , 'vartwo' = ("value2")])
+([ 'assign' , 'varname' = {valaue}],[ 'assign' , 'vartwo' = {< 'render', ("value2")>}])

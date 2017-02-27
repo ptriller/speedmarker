@@ -1,8 +1,11 @@
-package de.soapwars.speedmarker.ast;
+package de.soapwars.speedmarker.ast.node;
 
 import de.soapwars.speedmarker.Node;
+import de.soapwars.speedmarker.SpeedMarkerModel;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Objects;
 
 /**
@@ -17,10 +20,19 @@ public class ContentNode implements Node {
     this.content = Objects.requireNonNull(content);
   }
 
-
   @Nonnull
   public String getContent() {
     return content;
+  }
+
+  @Override
+  public boolean isStatic() {
+    return true;
+  }
+
+  @Override
+  public void render(Writer writer, SpeedMarkerModel model) throws IOException {
+    writer.append(content);
   }
 
   @Override

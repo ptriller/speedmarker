@@ -12,9 +12,9 @@ public class SpeedmarkerTokenTest {
   public void testTokenIzer() throws Exception {
     try(InputStream is = SpeedmarkerTokenTest.class.getResourceAsStream("tokentest.txt")) {
       SimpleCharStream stream = new SimpleCharStream(is);
-      SpeedMarkerParserTokenManager tokenManager = new SpeedMarkerParserTokenManager(stream);
+      SpeedMarkerParserBaseTokenManager tokenManager = new SpeedMarkerParserBaseTokenManager(stream);
       for (Token token = tokenManager.getNextToken();
-           token.kind != SpeedMarkerParserConstants.EOF;
+           token.kind != SpeedMarkerParserBaseConstants.EOF;
            token = tokenManager.getNextToken()) {
         System.out.println("(" + token.kind + "): " + token.image);
       }
