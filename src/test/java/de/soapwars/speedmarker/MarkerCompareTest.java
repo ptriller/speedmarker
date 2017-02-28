@@ -28,4 +28,10 @@ public class MarkerCompareTest extends RenderTestBase {
     compareOutput("/render/if.ftl",
         mapOf("test", Boolean.FALSE, "test2", Boolean.FALSE));
   }
+
+  @Test
+  public void testRef() throws Exception {
+    String out = renderFreemarker("/render/reftest.ftl", Collections.emptyMap());
+    System.out.println(out);
+  }
 }

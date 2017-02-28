@@ -1,6 +1,5 @@
 package de.soapwars.speedmarker.valaue;
 
-import de.soapwars.speedmarker.Value;
 import de.soapwars.speedmarker.ValueType;
 
 import javax.annotation.Nonnull;
@@ -8,8 +7,7 @@ import javax.annotation.Nonnull;
 /**
  * Created by ptriller on 26.02.2017.
  */
-public class BooleanValue implements Value {
-
+public class BooleanValue extends ValueBase {
   @Nonnull
   private final Boolean value;
 
@@ -18,13 +16,17 @@ public class BooleanValue implements Value {
   }
 
   @Override
-  public ValueType getType() {
+  public ValueType getPrimaryType() {
     return ValueType.BOOLEAN;
   }
 
   @Override
-  @Nonnull
-  public Boolean getValue() {
+  public Boolean asBoolean() {
     return value;
+  }
+
+  @Override
+  public String toString() {
+    return value.toString();
   }
 }

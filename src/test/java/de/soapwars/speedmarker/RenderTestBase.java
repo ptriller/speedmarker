@@ -22,7 +22,7 @@ public class RenderTestBase {
     Assert.assertEquals(renderFreemarker(templatePath, model), renderSpeedMarker(templatePath, model));
   }
 
-  private String renderFreemarker(String templatePath, Map<String, Object> model) throws Exception {
+  protected String renderFreemarker(String templatePath, Map<String, Object> model) throws Exception {
     Configuration cfg = new Configuration(Configuration.VERSION_2_3_25);
     cfg.setTemplateLoader(new ClassTemplateLoader(this.getClass().getClassLoader(), ""));
     Template template = cfg.getTemplate(templatePath);
@@ -32,12 +32,10 @@ public class RenderTestBase {
     return writer.toString();
   }
 
-  private String renderSpeedMarker(String templatePath, Map<String, Object> model) throws Exception {
+  protected String renderSpeedMarker(String templatePath, Map<String, Object> model) throws Exception {
     SpeedMarker speedMarker = new SpeedMarkerBuilder().build();
     StringWriter writer = new StringWriter();
-    SpeedMarkerModel sModel = new SpeedMarkerModel();
-    sModel.add(model);
-    speedMarker.render(templatePath, writer, sModel);
+    speedMarker.render(templatePath, writer, model);
     writer.close();
     return writer.toString();
   }

@@ -4,7 +4,6 @@ import de.soapwars.speedmarker.Expression;
 import de.soapwars.speedmarker.Node;
 import de.soapwars.speedmarker.SpeedMarkerModel;
 import de.soapwars.speedmarker.Value;
-import de.soapwars.speedmarker.ValueType;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -44,7 +43,7 @@ public class IfNode implements Node {
       return true;
     }
     Value value = condition.getValue(model);
-    return value != null && value.getType() == ValueType.BOOLEAN && (Boolean) value.getValue();
+    return value.asBoolean();
   }
 
   @Override

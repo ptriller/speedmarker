@@ -23,9 +23,15 @@ public class InterpolationNode implements Node {
     return expression.isStatic();
   }
 
+  /**
+   * TODO Cast if not already String
+   * @param writer
+   * @param model
+   * @throws IOException
+   */
   @Override
   public void render(Writer writer, SpeedMarkerModel model) throws IOException {
-    writer.write(expression.getValue(model).getValue().toString());
+    writer.write(expression.getValue(model).toString());
   }
 
   @Override

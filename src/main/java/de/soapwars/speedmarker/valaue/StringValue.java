@@ -1,6 +1,5 @@
 package de.soapwars.speedmarker.valaue;
 
-import de.soapwars.speedmarker.Value;
 import de.soapwars.speedmarker.ValueType;
 
 import javax.annotation.Nonnull;
@@ -8,7 +7,7 @@ import javax.annotation.Nonnull;
 /**
  * Created by ptriller on 26.02.2017.
  */
-public class StringValue implements Value {
+public class StringValue extends ValueBase {
 
   @Nonnull
   private final String value;
@@ -18,13 +17,18 @@ public class StringValue implements Value {
   }
 
   @Override
-  public ValueType getType() {
+  public ValueType getPrimaryType() {
     return ValueType.STRING;
   }
 
   @Override
-  @Nonnull
-  public String getValue() {
+  public String asString() {
     return value;
   }
+
+  @Override
+  public String toString() {
+    return value;
+  }
+
 }
