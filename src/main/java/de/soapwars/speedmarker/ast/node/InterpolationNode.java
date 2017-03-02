@@ -31,7 +31,8 @@ public class InterpolationNode implements Node {
    */
   @Override
   public void render(Writer writer, SpeedMarkerModel model) throws IOException {
-    writer.write(expression.getValue(model).toString());
+
+    writer.write(model.escape(expression.getValue(model)).toString());
   }
 
   @Override

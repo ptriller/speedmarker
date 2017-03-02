@@ -5,6 +5,7 @@ package de.soapwars.speedmarker;
 
 import org.junit.Test;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Map;
 
@@ -34,4 +35,23 @@ public class MarkerCompareTest extends RenderTestBase {
     String out = renderFreemarker("/render/reftest.ftl", Collections.emptyMap());
     System.out.println(out);
   }
+
+  @Test
+  public void testEscape() throws Exception {
+    compareOutput("/render/escape.ftl",
+        mapOf("x", 99, "y",0,"z",1));
+  }
+
+  @Test
+  public void testAssign() throws Exception {
+    compareOutput("/render/assign.ftl",
+        mapOf("a","bbb"));
+  }
+
+  @Test
+  public void testComment() throws Exception {
+    compareOutput("/render/comment.ftl",
+        mapOf());
+  }
+
 }

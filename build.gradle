@@ -26,8 +26,10 @@ targetCompatibility = 1.8
 dependencies {
   javacc 'net.java.dev.javacc:javacc:7.0.2'
   compile 'com.google.code.findbugs:jsr305:3.0.1', optional
+  compile 'org.slf4j:slf4j-api:1.7.24'
   testCompile 'junit:junit:4.12'
   testCompile 'org.freemarker:freemarker:2.3.25-incubating'
+  testCompile 'ch.qos.logback:logback-classic:1.2.1'
 }
 
 idea {

@@ -1,0 +1,1 @@
+<#assign v=a>${v}<#assign w>888</#assign>x${w}

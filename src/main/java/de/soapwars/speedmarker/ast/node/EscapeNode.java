@@ -1,8 +1,6 @@
 package de.soapwars.speedmarker.ast.node;
 
-import de.soapwars.speedmarker.Expression;
-import de.soapwars.speedmarker.Node;
-import de.soapwars.speedmarker.SpeedMarkerModel;
+import de.soapwars.speedmarker.*;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -10,7 +8,7 @@ import java.io.Writer;
 /**
  * Created by ptriller on 12.02.2017.
  */
-public class EscapeNode implements Node {
+public class EscapeNode implements Filter, Node {
 
   private String varName;
 
@@ -25,7 +23,7 @@ public class EscapeNode implements Node {
   }
 
   /**
-   * No idea how to check the escape expression easily...
+   * No idea how to check the filter expression easily...
    *
    * @return
    */
@@ -36,13 +34,28 @@ public class EscapeNode implements Node {
 
   @Override
   public void render(Writer writer, SpeedMarkerModel model) throws IOException {
-    // TODO Push escaper
-    content.render(writer, model);
+    Filter old = model.updateEscaper(this);
+    try {
+      content.render(writer, model);
+    } finally {
+      model.updateEscaper(old);
+    }
   }
 
   @Override
   public String debugTree() {
     return "[ 'escape', " + varName + ", {" + expression.debugTree() + "}, "
         + content.debugTree() + "]";
+  }
+
+  @Override
+  public Value filter(SpeedMarkerModel model, Value value) {
+    model.pushScope();
+    try {
+      model.put(varName, value);
+      return expression.getValue(model);
+    } finally {
+      model.popScope();
+    }
   }
 }

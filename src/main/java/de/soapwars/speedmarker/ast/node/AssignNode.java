@@ -36,6 +36,7 @@ public class AssignNode implements Node {
 
   @Override
   public void render(Writer writer, SpeedMarkerModel model) {
+    model.put(variableName, value.getValue(model));
   }
 
   @Override

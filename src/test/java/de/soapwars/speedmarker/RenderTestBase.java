@@ -7,6 +7,8 @@ import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -17,9 +19,14 @@ import java.util.Map;
  */
 public class RenderTestBase {
 
+  private Logger LOG = LoggerFactory.getLogger(RenderTestBase.class);
 
   protected void compareOutput(String templatePath, Map<String, Object> model) throws Exception {
-    Assert.assertEquals(renderFreemarker(templatePath, model), renderSpeedMarker(templatePath, model));
+    String expected = renderFreemarker(templatePath, model);
+    LOG.info("Exprected: {}", expected);
+    String actual = renderSpeedMarker(templatePath, model);
+    LOG.info("Actual: {}", actual);
+    Assert.assertEquals(expected, actual);
   }
 
   protected String renderFreemarker(String templatePath, Map<String, Object> model) throws Exception {
