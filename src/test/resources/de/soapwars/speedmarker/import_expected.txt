@@ -1,2 +1,1 @@
-([ 'import', {test}, suppe],"
-",[ 'import', {test2}, suppe2])
+([ 'import', {test}, suppe],[ 'import', {test2}, suppe2])

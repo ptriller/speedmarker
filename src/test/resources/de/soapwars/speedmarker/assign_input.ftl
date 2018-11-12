@@ -1,1 +1,2 @@
-<#assign varname=valaue ><#assign vartwo>value2</#assign>
+<#assign varname=valaue >
+<#assign vartwo>value2</#assign>

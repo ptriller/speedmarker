@@ -1,1 +1,4 @@
-<#attempt>stuff<#recover>stuff2</#attempt>
+<#attempt>stuff
+<#recover>
+<#t>stuff2
+</#attempt>

@@ -1,2 +1,1 @@
-([ 'include', {hallo}{ignore_missing={test},parse={test2}}],"
-",[ 'include', {peter}{}])
+([ 'include', {hallo}{ignore_missing={test},parse={test2}}],[ 'include', {peter}{}])

@@ -99,20 +99,20 @@ TOKEN_MGR_DECLS : {
 | <TAG_ITEMS: "<#items"> { pushState(EXPRESSION); }
 | <TAG_LIST: "<#list"> { pushState(EXPRESSION); }
 | <TAG_LOCAL: "<#local"> { pushState(EXPRESSION); }
-| <TAG_LT: "<#lt"> { pushState(EXPRESSION); }
+| <TAG_LT: "<#lt>"> // DONE
 | <TAG_MACRO: "<#macro"> { pushState(EXPRESSION); }
 | <TAG_NESTED: "<#nested"> { pushState(EXPRESSION); }
 | <TAG_NOESCAPE: "<#noescape"> { pushState(EXPRESSION); }
-| <TAG_NT: "<#nt"> { pushState(EXPRESSION); }
+| <TAG_NT: "<#nt>"> // DONE
 | <TAG_RECOVER: "<#recover"> { pushState(EXPRESSION); } // DONE
 | <TAG_RECURSE: "<#recurse"> { pushState(EXPRESSION); }
 | <TAG_RETURN: "<#return"> { pushState(EXPRESSION); }
-| <TAG_SEP: "<#sep"> { pushState(EXPRESSION); }
+| <TAG_SEP: "<#sep"> { pushState(EXPRESSION); } // DONE
 | <TAG_SETTING: "<#setting"> { pushState(EXPRESSION); }
 | <TAG_STOP: "<#stop"> { pushState(EXPRESSION); }
 | <TAG_SWITCH: "<#switch"> { pushState(EXPRESSION); }
-| <TAG_RT: "<#rt"> { pushState(EXPRESSION); }
-| <TAG_T: "<#t"> { pushState(EXPRESSION); }
+| <TAG_RT: "<#rt>"> // DONE
+| <TAG_T: "<#t>"> // DONE
 | <TAG_VISIT: "<#visit"> { pushState(EXPRESSION); }
 | <TAG_ILLEGAL: ("<#" ~[ "\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
                   "\u2001", "\u2002", "\u2003", "\u2004", "\u2005",
@@ -135,19 +135,19 @@ TOKEN_MGR_DECLS : {
 | <TAGEND_ITEMS: "</#items>">
 | <TAGEND_LIST: "</#list>">
 | <TAGEND_LOCAL: "</#local>">
-| <TAGEND_LT: "</#lt>">
+//| <TAGEND_LT: "</#lt>">
 | <TAGEND_MACRO: "</#macro>">
 | <TAGEND_NESTED: "</#nested>">
 | <TAGEND_NOESCAPE: "</#noescape>">
-| <TAGEND_NT: "</#nt>">
+//| <TAGEND_NT: "</#nt>">
 | <TAGEND_RECURSE: "</#recurse>">
 | <TAGEND_RETURN: "</#return>">
 | <TAGEND_SEP: "</#sep>">
 | <TAGEND_SETTING: "</#setting>">
 | <TAGEND_STOP: "</#stop>">
 | <TAGEND_SWITCH: "</#switch>">
-| <TAGEND_RT: "</#rt>">
-| <TAGEND_T: "</#t>">
+//| <TAGEND_RT: "</#rt>">
+//| <TAGEND_T: "</#t>">
 | <TAGEND_VISIT: "</#visit>">
 | <TAGEND_ILLEGAL: ("</#" ~[ "\u0020", "\u00A0", "\u1680", "\u180E", "\u2000",
                   "\u2006", "\u2007", "\u2008", "\u2009", "\u200A",
@@ -156,7 +156,8 @@ TOKEN_MGR_DECLS : {
                   "\u2028", "\u2029"])+>
 | <MACROCALL_START: "<@" > { pushState(EXPRESSION); }
 | <MACROCALL_END: "</@" > { pushState(EXPRESSION); }
-| <CONTENT: (~[ "$", "<"])+ | ~[]>
+| <NEWLINE: "\n">
+| <CONTENT: (~[ "$", "<", "\n" ])+ | ~[ "\n" ]>
 }
 
 
@@ -165,7 +166,7 @@ TOKEN_MGR_DECLS : {
     "\u2001", "\u2002", "\u2003", "\u2004", "\u2005",
     "\u2006", "\u2007", "\u2008", "\u2009", "\u200A",
     "\u200B", "\u202F", "\u205F", "\u3000", "\uFEFF",
-    "\n", "\u000b", "\u000c", "\r", "\u0085",
+    "\u000b", "\u000c", "\r", "\u0085",
     "\u2028", "\u2029" ])+>
 }
 
@@ -204,6 +205,7 @@ TOKEN_MGR_DECLS : {
 | <BRACET_OPEN: "("> { pushState(CEXPRESSION); }
 | <BRACET_CLOSE: ")"> { popState(); }
 | <QUESTIONMARK: "?">
+| <EXNEWLINE: "\n">
 // TODO THESE THINGS ARE NOT KEYWORDS AT MOST PLALCES
  // JUST IN LIST AND STUFF. MAYBE I NEED TO MAKE THE PARSER BETTER ????
 //| <KEY_TO: "to">
@@ -362,7 +364,9 @@ Node content(ParseState state) :
   Token token;
 }
 {
-  token = <CONTENT> { builder.add(token); return builder.build(); }
+  ((token = <CONTENT>)
+  |(token = <NEWLINE>))
+  { builder.add(token); return builder.build(); }
 }
 
 
